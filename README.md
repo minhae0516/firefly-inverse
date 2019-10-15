@@ -40,9 +40,7 @@ In this code, The extended Kalman filter is used for the belief update.
 - `firefly_gym.py`: This file includes belief update that is called in `play.py`. 
 
 ## Block diagram of the code
-![alt text][img]
-
-[img]: /documents/code_framework.jpg "Block Diagram"
+![Block Diagram](./documents/code_framework.jpg) 
 ## Hyperparameters
 The following parameters play an important role to determine the performance. 
 
