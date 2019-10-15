@@ -62,7 +62,9 @@ class BeliefStep(nn.Module):
 
         return self.b, self.state, self.obs_gains, self.obs_noise_stds
 
-    def forward(self,  b, ox, a, box):
+
+    """
+        def forward(self,  b, ox, a, box):
         I = torch.eye(5)
 
         # Q matrix
@@ -112,6 +114,67 @@ class BeliefStep(nn.Module):
         # terminal check
         terminal = self._isTerminal(bx, a) # check the monkey stops or not
         return b, {'stop': terminal}
+        
+    def A(self, x_, a): # F in wiki
+        dt = self.dt
+        px, py, ang, vel, ang_vel = torch.split(x_.view(-1),1)
+
+        A_ = torch.zeros(5, 5)
+        A_[:3, :3] = torch.eye(3)
+        A_[0, 2] = - (self.pro_gains[0] * a[0]) * torch.sin(ang) * dt
+        #A_[0, 3] = torch.cos(ang) * dt
+        A_[1, 2] = (self.pro_gains[1] * a[1]) * torch.cos(ang) * dt
+        #A_[1, 3] = torch.sin(ang) * dt
+        #A_[2, 4] = dt * ang_vel
+        return A_
+    """
+    def forward(self,  b, ox, a, box):
+        I = torch.eye(5)
+
+        # Q matrix
+        Q = torch.zeros(5, 5)
+        Q[-2:, -2:] = torch.diag(self.pro_noise_stds**2) # variance of vel, ang_vel
+
+        # R matrix
+        R = torch.diag(self.obs_noise_stds ** 2)
+
+        # H matrix
+        H = torch.zeros(2, 5)
+        H[:, -2:] = torch.diag(self.obs_gains)
+
+
+        # Extended Kalman Filter
+        pre_bx_, P = b
+        bx_ = dynamics(pre_bx_, a.view(-1), self.dt, box, self.pro_gains, self.pro_noise_stds)
+        bx_ = bx_.t() # make a column vector
+        A = self.A(bx_)
+        P_ = A.mm(P).mm(A.t())+Q # P_ = APA^T+Q
+        if not is_pos_def(P_):
+            print("P_:", P_)
+            print("P:", P)
+            print("A:", A)
+            APA = A.mm(P).mm(A.t())
+            print("APA:", APA)
+            print("APA +:", is_pos_def(APA))
+        error = ox - self.observations(bx_)
+        S = H.mm(P_).mm(H.t()) + R # S = HPH^T+R
+        K = P_.mm(H.t()).mm(torch.inverse(S)) # K = PHS^-1
+        bx = bx_ + K.matmul(error)
+        I_KH = I - K.mm(H)
+        P = I_KH.mm(P_)
+
+        if not is_pos_def(P):
+            print("here")
+            print("P:", P)
+            P = (P + P.t()) / 2 + 1e-6 * I  # make symmetric to avoid computational overflows
+
+        bx = bx.t() #return to a row vector
+        b = bx, P  # belief
+
+
+        # terminal check
+        terminal = self._isTerminal(bx, a) # check the monkey stops or not
+        return b, {'stop': terminal}
 
 
     def observations(self, x): # observation noise on
@@ -124,17 +187,14 @@ class BeliefStep(nn.Module):
         ox = torch.stack((ovel, oang_vel))
         return ox
 
-    def A(self, x_, a): # F in wiki
+    def A(self, x_): # F in wiki
         dt = self.dt
         px, py, ang, vel, ang_vel = torch.split(x_.view(-1),1)
 
         A_ = torch.zeros(5, 5)
         A_[:3, :3] = torch.eye(3)
-        A_[0, 2] = - (self.pro_gains[0] * a[0]) * torch.sin(ang) * dt
-        #A_[0, 3] = torch.cos(ang) * dt
-        A_[1, 2] = (self.pro_gains[1] * a[1]) * torch.cos(ang) * dt
-        #A_[1, 3] = torch.sin(ang) * dt
-        #A_[2, 4] = dt * ang_vel
+        A_[0, 2] = - vel * torch.sin(ang) * dt
+        A_[1, 2] = vel * torch.cos(ang) * dt
         return A_
 
 
