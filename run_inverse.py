@@ -28,25 +28,27 @@ torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
 # if gpu is to be used
-CUDA = False
-device = "cpu"
+#CUDA = False
+#device = "cpu"
+
+CUDA = torch.cuda.is_available()
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 tic = time.time()
 
 
 #filename = '20191014-180128' #studpid agent
-filename = '20191015-161114'
+filename = '20191015-161114-2'
 df = pd.read_csv('../firefly-inverse-data/data/' + filename + '_log.csv', usecols=['discount_factor'])
 DISCOUNT_FACTOR = df['discount_factor'][0]
 
 env = Model(arg) # build an environment
-agent = Agent(env.state_dim, env.action_dim, arg,  filename, hidden_dim=128, gamma=DISCOUNT_FACTOR, tau=0.001, device = "cpu")
+agent = Agent(env.state_dim, env.action_dim, arg,  filename, hidden_dim=128, gamma=DISCOUNT_FACTOR, tau=0.001) #, device = "cpu")
 agent.load(filename)
 
-
 true_theta = reset_theta(arg.gains_range, arg.std_range, arg.goal_radius_range)
-x_traj, obs_traj, a_traj = trajectory(agent, filename, true_theta, arg.INVERSE_BATCH_SIZE, env, arg, DISCOUNT_FACTOR, arg.gains_range, arg.std_range, arg.goal_radius_range) # generate true trajectory
-true_loss = getLoss(agent, x_traj, obs_traj, a_traj, filename, true_theta, env, arg, DISCOUNT_FACTOR, arg.gains_range, arg.std_range) # this is the upper bound of loss?
+x_traj, obs_traj, a_traj, _ = trajectory(agent, true_theta, arg.INVERSE_BATCH_SIZE, env, arg, arg.gains_range, arg.std_range, arg.goal_radius_range) # generate true trajectory
+true_loss = getLoss(agent, x_traj, obs_traj, a_traj, true_theta, env, arg.gains_range, arg.std_range) # this is the lower bound of loss?
 
 
 #theta = nn.Parameter(true_theta.data.clone()+0.5*true_theta.data.clone())
@@ -61,7 +63,7 @@ prev_loss = 100000
 
 
 for num_batches in range(100000000):
-    loss = getLoss(agent, x_traj, obs_traj, a_traj, filename, theta, env, arg, DISCOUNT_FACTOR, arg.gains_range, arg.std_range)
+    loss = getLoss(agent, x_traj, obs_traj, a_traj, theta, env, arg.gains_range, arg.std_range)
     loss_log.append(loss.data)
     optT.zero_grad()
     loss.backward(retain_graph=True)
@@ -78,7 +80,7 @@ for num_batches in range(100000000):
                                                                                 true_theta))
 
 #
-loss = getLoss(agent, x_traj, obs_traj, a_traj, filename, theta, env, arg, DISCOUNT_FACTOR, arg.gains_range, arg.std_range)
+loss = getLoss(agent, x_traj, obs_traj, a_traj, theta, env, arg.gains_range, arg.std_range)
 print("loss:{}".format(loss))
 
 toc = time.time()
