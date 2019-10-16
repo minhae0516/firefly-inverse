@@ -30,11 +30,12 @@ torch.backends.cudnn.benchmark = False
 import datetime
 import pandas as pd
 
-filename = '20191014-180128' # agent information
+filename = '20191015-161114-1' # agent information
 df = pd.read_csv('../firefly-inverse-data/data/' + filename + '_log.csv',
                  usecols=['discount_factor','process gain forward', 'process gain angular', 'process noise std forward',
                           'process noise std angular', 'obs gain forward', 'obs gain angular', 'obs noise std forward',
                           'obs noise std angular', 'goal radius'])
+                          
 DISCOUNT_FACTOR = df['discount_factor'][0]
 gains_range = [np.floor(df['process gain forward'].min()), np.ceil(df['process gain forward'].max()),
                np.floor(df['process gain angular'].min()), np.ceil(df['process gain angular'].max())]

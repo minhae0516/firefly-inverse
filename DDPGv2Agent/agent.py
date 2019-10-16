@@ -11,24 +11,25 @@ from .utils import *
 from .ReplayMemory import ReplayMemory
 from .belief_step import BeliefStep # belief update of the agent
 
-CUDA = torch.cuda.is_available()
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#CUDA = torch.cuda.is_available()
+#device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 class Agent():
-    def __init__(self, input_dim, action_dim, arg, filename=None, hidden_dim=128, gamma=0.99, tau=0.001, memory_size=1e6):
-        #pro_gains, pro_noise_stds, goal_radius
+    def __init__(self, input_dim, action_dim, arg, filename=None, hidden_dim=128, gamma=0.99, tau=0.001, memory_size=1e6, device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")):
+
+        self.device = device
         self.input_dim = input_dim
         self.action_dim = action_dim
         self.hidden_dim = hidden_dim
         self.gamma = gamma
         self.tau = tau
-        #print("Running DDPG Agent")
+        print("Running DDPG Agent: using ", self.device)
 
-        self.actor = Actor(input_dim, action_dim, hidden_dim).to(device)
-        self._actor = Actor(input_dim, action_dim, hidden_dim).to(device)  # target NW
-        self.critic = Critic(input_dim, action_dim, hidden_dim).to(device)
-        self._critic = Critic(input_dim, action_dim, hidden_dim).to(device)# target NW
+        self.actor = Actor(input_dim, action_dim, hidden_dim).to(self.device)
+        self._actor = Actor(input_dim, action_dim, hidden_dim).to(self.device)  # target NW
+        self.critic = Critic(input_dim, action_dim, hidden_dim).to(self.device)
+        self._critic = Critic(input_dim, action_dim, hidden_dim).to(self.device)# target NW
 
 
         self.actor_optim = Adam(self.actor.parameters(), lr=1e-4)
@@ -51,7 +52,7 @@ class Agent():
 
     def select_action(self,  state, action_noise=None, param = None):
 
-        state = Variable(state).to(device)
+        state = Variable(state).to(self.device)
 
         if param is not None:
             mu = self.actor_perturbed(state).detach()
@@ -59,7 +60,7 @@ class Agent():
             mu = self.actor(state).detach()
 
         if action_noise is not None:
-            mu += torch.Tensor(action_noise.noise()).to(device)
+            mu += torch.Tensor(action_noise.noise()).to(self.device)
         return mu.clamp(-1, 1)
 
     def update_parameters(self, batch):
@@ -150,6 +151,6 @@ class Agent():
                 pass
             param = params[name]
             if 'bn' not in name:
-                random = torch.randn(param.shape).to(device)
+                random = torch.randn(param.shape).to(self.device)
                 
                 param += random * param_noise.current_stddev

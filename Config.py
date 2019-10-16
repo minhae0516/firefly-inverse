@@ -22,7 +22,7 @@ class Config:
         self.EPISODE_TIME = 1  # # maximum length of time for one episode. if monkey can't firefly within this time period, new firefly comes
         self.EPISODE_LEN = int(self.EPISODE_TIME / self.DELTA_T)  # number of time steps(actions) for one episode
 
-        self.TOT_T = 200000  # total number of time steps for this code
+        self.TOT_T = 2000000000  # total number of time steps for this code
 
         self.BATCH_SIZE = 64  # for replay memory (default:64)
         self.REWARD = 10  # for max reward
