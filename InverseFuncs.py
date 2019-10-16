@@ -2,10 +2,8 @@
 # collections of functions for inverse control
 
 import torch
-from DDPGv2Agent import Agent
 
-
-def trajectory(agent, filename, theta, TOT_T, env, arg, DISCOUNT_FACTOR, gains_range, std_range, goal_radius_range):
+def trajectory(agent, theta, TOT_T, env, arg, gains_range, std_range, goal_radius_range):
     pro_gains, pro_noise_stds, obs_gains, obs_noise_stds,  goal_radius = torch.split(theta.view(-1), 2)
 
     x_traj = [] # true location
@@ -25,7 +23,12 @@ def trajectory(agent, filename, theta, TOT_T, env, arg, DISCOUNT_FACTOR, gains_r
         t = torch.zeros(1)
 
         while t < arg.EPISODE_LEN: # for a single FF
+
+            #state = Variable(state).to(device)
+            #action = agent.actor(state).detach()
             action = agent.actor(state)
+
+            #action = agent.select_action(state)
 
             next_x, reached_target = env(x, action.view(-1)) #track true next_x of monkey
             ox = agent.Bstep.observations(next_x)  # observation

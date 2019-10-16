@@ -12,6 +12,12 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+<<<<<<< HEAD
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="1SFwpwKAqfKuskmOJD8fHPwxo4U" />
+=======
   <component name="FUSProjectUsageTrigger">
     <session id="1350289422">
       <usages-collector id="statistics.lifecycle.project">
@@ -164,7 +170,9 @@
       </pane>
     </panes>
   </component>
+>>>>>>> aceee3b8e29c6370be03c05bf435949d38a20f7f
   <component name="PropertiesComponent">
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RunDashboard">
@@ -179,7 +187,49 @@
       </list>
     </option>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.play_agent">
+    <configuration name="play_agent" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="firefly-inverse" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/play_agent.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="run_inverse" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="firefly-inverse" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/run_inverse.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="train_forward_agent" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="firefly-inverse" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -203,6 +253,8 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.play_agent" />
+        <item itemvalue="Python.run_inverse" />
         <item itemvalue="Python.train_forward_agent" />
       </list>
     </recent_temporary>
@@ -220,6 +272,18 @@
     </task>
     <servers />
   </component>
+<<<<<<< HEAD
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+=======
   <component name="ToolWindowManager">
     <frame x="43" y="53" width="1641" height="1027" extended-state="0" />
     <editor active="true" />
@@ -308,5 +372,6 @@
         </state>
       </provider>
     </entry>
+>>>>>>> aceee3b8e29c6370be03c05bf435949d38a20f7f
   </component>
 </project>

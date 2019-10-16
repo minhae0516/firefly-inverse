@@ -27,21 +27,25 @@ import time
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
+# if gpu is to be used
+CUDA = False
+device = "cpu"
+
 tic = time.time()
 
 
 #filename = '20191014-180128' #studpid agent
-filename = '20191015-085558'
+filename = '20191015-161114'
 df = pd.read_csv('../firefly-inverse-data/data/' + filename + '_log.csv', usecols=['discount_factor'])
 DISCOUNT_FACTOR = df['discount_factor'][0]
 
 env = Model(arg) # build an environment
-agent = Agent(env.state_dim, env.action_dim, arg,  filename, hidden_dim=128, gamma=DISCOUNT_FACTOR, tau=0.001)
+agent = Agent(env.state_dim, env.action_dim, arg,  filename, hidden_dim=128, gamma=DISCOUNT_FACTOR, tau=0.001, device = "cpu")
 agent.load(filename)
 
 
 true_theta = reset_theta(arg.gains_range, arg.std_range, arg.goal_radius_range)
-x_traj, obs_traj, a_traj = trajectory(agent, filename, true_theta, arg.INVERSE_BATCH_SIZE, env, arg, DISCOUNT_FACTOR, arg.gains_range, arg.std_range, arg.goal_radius_range ) # generate true trajectory
+x_traj, obs_traj, a_traj = trajectory(agent, filename, true_theta, arg.INVERSE_BATCH_SIZE, env, arg, DISCOUNT_FACTOR, arg.gains_range, arg.std_range, arg.goal_radius_range) # generate true trajectory
 true_loss = getLoss(agent, x_traj, obs_traj, a_traj, filename, true_theta, env, arg, DISCOUNT_FACTOR, arg.gains_range, arg.std_range) # this is the upper bound of loss?
 
 

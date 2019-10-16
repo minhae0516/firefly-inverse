@@ -24,7 +24,7 @@ class Inverse_Config:
 
         self.TOT_T = 1000000000  # total number of time steps for this code
 
-        self.INVERSE_BATCH_SIZE = 300  # the number of actions for a set of trajectory
+        self.INVERSE_BATCH_SIZE = 200  # the number of actions for a set of trajectory
         self.REWARD = 10  # for max reward
 
         self.gains_range = [8, 12, 13, 17]  # [vel min, vel max, ang min, ang max]
