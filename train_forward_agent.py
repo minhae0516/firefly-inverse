@@ -106,8 +106,8 @@ while tot_t <= arg.TOT_T:
         action = agent.select_action(state, action_noise = noise, param = None)  # with action noise
 
         next_x, reached_target = env(x, action.view(-1)) #track true next_x of monkey
-        ox = agent.Bstep.observations(next_x)  # observation
-        next_b, info = agent.Bstep(b, ox, action, env.box) # belief next state, info['stop']=terminal # reward only depends on belief
+        next_ox = agent.Bstep.observations(next_x)  # observation
+        next_b, info = agent.Bstep(b, next_ox, action, env.box) # belief next state, info['stop']=terminal # reward only depends on belief
         next_state = agent.Bstep.Breshape(next_b, t, theta) # state used in policy is different from belief
 
         # reward
