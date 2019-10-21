@@ -76,6 +76,7 @@ loss_log = deque(maxlen=1000)
 theta_log = deque(maxlen=1000)
 optT = torch.optim.Adam([theta], lr=1e-3)
 prev_loss = 100000
+loss_diff = deque(maxlen=5)
 
 
 for num_batches in range(10000):
@@ -89,7 +90,11 @@ for num_batches in range(10000):
     if loss < true_loss:
         print('loss:', loss.data, 'true loss:', true_loss.data)
 
-    if torch.abs(prev_loss - loss) < 1e-4:
+    #if torch.abs(prev_loss - loss) < 1e-4:
+     #   break
+    loss_diff.append(torch.abs(prev_loss - loss))
+
+    if num_batches > 5 and np.sum(loss_diff) < 1e-3:
         break
     prev_loss = loss.data
 
