@@ -147,7 +147,7 @@ class BeliefStep(nn.Module):
         pre_bx_, P = b
         bx_ = dynamics(pre_bx_, a.view(-1), self.dt, box, self.pro_gains, self.pro_noise_stds)
         bx_ = bx_.t() # make a column vector
-        A = self.A(bx_)
+        A = self.A(bx_) # after dynamics
         P_ = A.mm(P).mm(A.t())+Q # P_ = APA^T+Q
         if not is_pos_def(P_):
             print("P_:", P_)
