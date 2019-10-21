@@ -33,9 +33,9 @@ class Config:
         self.STD_STEP_SIZE = 1e-4  # 1e-4 action space noise (default: 2e-3)
 
         self.filename = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-        self.gains_range = [8, 12, 13, 17] # [vel min, vel max, ang min, ang max]
+        self.gains_range = [8, 12, 8, 12] # [vel min, vel max, ang min, ang max]
         self.std_range = [1, 2, 1, 2]# [vel min, vel max, ang min, ang max]
-        self.goal_radius_range = [0.35* self.WORLD_SIZE, 0.4* self.WORLD_SIZE] #0.375: best radius
+        self.goal_radius_range = [0.1* self.WORLD_SIZE, 0.9* self.WORLD_SIZE] #0.375: best radius
 
 
 

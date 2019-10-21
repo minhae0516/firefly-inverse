@@ -127,10 +127,24 @@ def reset_theta(gains_range, std_range, goal_radius_range):
     goal_radius = torch.zeros(1).uniform_(goal_radius_range[0], goal_radius_range[1])
 
 
-
-    #rew_std = GOAL_RADIUS / 2 / 2 * torch.zeros(1).uniform_(rew_std_range[0], rew_std_range[1])  # 2*std of Gaussian distribution for reward: 95%
-
-
-
     theta = torch.cat([pro_gains, pro_noise_stds, obs_gains, obs_noise_stds, goal_radius])
+    return theta
+
+def theta_range(theta, gains_range, std_range, goal_radius_range):
+
+    theta[0].data.clamp_(gains_range[0], gains_range[1])
+    theta[1].data.clamp_(gains_range[2], gains_range[3])  # [proc_gain_ang]
+
+    theta[2].data.clamp_(std_range[0], std_range[1])  # [proc_vel_noise]
+    theta[3].data.clamp_(std_range[2], std_range[3])  # [proc_ang_noise]
+
+    theta[4].data.clamp_(gains_range[0], gains_range[1])  # [obs_gain_vel]
+    theta[5].data.clamp_(gains_range[2], gains_range[3])  # [obs_gain_ang]
+
+    theta[6].data.clamp_(std_range[0], std_range[1])  # [obs_vel_noise]
+    theta[7].data.clamp_(std_range[2], std_range[3])  # [obs_ang_noise]
+
+    theta[8].data.clamp_(goal_radius_range[0], goal_radius_range[1])
+
+
     return theta

@@ -30,7 +30,7 @@ torch.backends.cudnn.benchmark = False
 import datetime
 import pandas as pd
 
-filename = '20191015-161114' # agent information
+filename = '20191016-205855-5' # agent information
 df = pd.read_csv('../firefly-inverse-data/data/' + filename + '_log.csv',
                  usecols=['discount_factor','process gain forward', 'process gain angular', 'process noise std forward',
                           'process noise std angular', 'obs gain forward', 'obs gain angular', 'obs noise std forward',
@@ -52,11 +52,11 @@ x, b, state, pro_gains, pro_noise_stds, obs_gains, obs_noise_stds, goal_radius  
 state_dim = env.state_dim
 action_dim = env.action_dim
 
-MAX_EPISODE = 10
+MAX_EPISODE = 20
 std = 0.00001 #0.05
 noise = Noise(action_dim, mean=0., std=std)
 
-agent = Agent(state_dim, action_dim, arg,  filename, hidden_dim=128, gamma=arg.DISCOUNT_FACTOR, tau=0.001)
+agent = Agent(state_dim, action_dim, arg,  filename, hidden_dim=128, gamma=DISCOUNT_FACTOR, tau=0.001)
 agent.load(filename)
 
 tot_t = 0.
@@ -106,7 +106,7 @@ while episode <= MAX_EPISODE:
                           pro_gains[0].item(), pro_gains[1].item(), pro_noise_stds[0].item(), pro_noise_stds[1].item(),
                           obs_gains[0].item(), obs_gains[1].item(), obs_noise_stds[0].item(), obs_noise_stds[1].item(),
                           goal_radius.item(),
-                          arg.WORLD_SIZE, arg.DISCOUNT_FACTOR]])
+                          arg.WORLD_SIZE, DISCOUNT_FACTOR]])
 
         df1 = pd.DataFrame(data, columns=COLUMNS)
         history = history.append(df1)
