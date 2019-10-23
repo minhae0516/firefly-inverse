@@ -77,15 +77,8 @@ class Model(nn.Module):
             self.goal_radius = goal_radius
 
 
-
-        #if rew_std is None:
-        #    self.rew_std = self.goal_radius / 2 / 2 * torch.zeros(1).uniform_(rew_std_range[0], rew_std_range[1])  # 2*std of Gaussian distribution for reward: 95%
-        #else:
-        #    self.rew_std = rew_std
-
-
         self.time = torch.zeros(1)
-        min_r = self.goal_radius.item()
+        min_r = 0 #self.goal_radius.item()
         #if self.box > 1.0:
             #min_r = self.box - BOX_STEP_SIZE
         r = torch.zeros(1).uniform_(min_r, self.box) # GOAL_RADIUS, self.box

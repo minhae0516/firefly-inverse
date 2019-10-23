@@ -30,12 +30,12 @@ class Config:
         self.DISCOUNT_FACTOR = 0.9
 
         self.BOX_STEP_SIZE = 5e-1
-        self.STD_STEP_SIZE = 2e-4  # 1e-4 action space noise (default: 2e-3)
+        self.STD_STEP_SIZE = 1e-4  # 1e-4 action space noise (default: 2e-3)
 
         self.filename = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
         self.gains_range = [8, 12, 8, 12] # [vel min, vel max, ang min, ang max]
-        self.std_range = [1, 2, 1, 2]# [vel min, vel max, ang min, ang max]
-        self.goal_radius_range = [0.3* self.WORLD_SIZE, 0.5* self.WORLD_SIZE] #0.375: best radius
+        self.std_range = [1e-2, 2, 1e-2, 2]# [vel min, vel max, ang min, ang max]
+        self.goal_radius_range = [0.1* self.WORLD_SIZE, 0.5* self.WORLD_SIZE] #0.375: best radius
 
 
 

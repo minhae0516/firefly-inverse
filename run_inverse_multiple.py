@@ -28,11 +28,11 @@ torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
 # if gpu is to be used
-#CUDA = False
-#device = "cpu"
+CUDA = False
+device = "cpu"
 
-CUDA = torch.cuda.is_available()
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#CUDA = torch.cuda.is_available()
+#device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 tic = time.time()
 
@@ -43,7 +43,7 @@ tic = time.time()
 # DISCOUNT_FACTOR = df['discount_factor'][0]
 
 
-filename = '20191016-205855-5' # agent information
+filename = '20191016-205855-221407' # agent information
 df = pd.read_csv('../firefly-inverse-data/data/' + filename + '_log.csv',
                  usecols=['discount_factor','process gain forward', 'process gain angular', 'process noise std forward',
                           'process noise std angular', 'obs gain forward', 'obs gain angular', 'obs noise std forward',
@@ -59,7 +59,7 @@ arg.goal_radius_range = [df['goal radius'].min(), df['goal radius'].max()]
 
 
 env = Model(arg) # build an environment
-agent = Agent(env.state_dim, env.action_dim, arg,  filename, hidden_dim=128, gamma=DISCOUNT_FACTOR, tau=0.001) #, device = "cpu")
+agent = Agent(env.state_dim, env.action_dim, arg,  filename, hidden_dim=128, gamma=DISCOUNT_FACTOR, tau=0.001, device = "cpu")
 agent.load(filename)
 
 
@@ -68,7 +68,7 @@ final_theta_log = []
 stderr_log = []
 result_log = []
 
-for num_thetas in range(2):
+for num_thetas in range(10):
 
     true_theta = reset_theta(arg.gains_range, arg.std_range, arg.goal_radius_range)
     true_theta_log.append(true_theta.data.clone())
@@ -81,14 +81,14 @@ for num_thetas in range(2):
     ini_theta = theta.data.clone()
 
 
-    loss_log = deque(maxlen=1000)
-    theta_log = deque(maxlen=1000)
+    loss_log = deque(maxlen=5000)
+    theta_log = deque(maxlen=5000)
     optT = torch.optim.Adam([theta], lr=1e-3)
     prev_loss = 100000
     loss_diff = deque(maxlen=5)
 
 
-    for num_batches in range(3000):
+    for num_batches in range(5000):
         loss = getLoss(agent, x_traj, obs_traj, a_traj, theta, env, arg.gains_range, arg.std_range)
         loss_log.append(loss.data)
         optT.zero_grad()
@@ -101,7 +101,7 @@ for num_thetas in range(2):
 
         loss_diff.append(torch.abs(prev_loss - loss))
 
-        if num_batches > 5 and np.sum(loss_diff) < 1e-3:
+        if num_batches > 5 and np.sum(loss_diff) < 1e-2:
             break
 
         #if torch.abs(prev_loss - loss) < 1e-3:
