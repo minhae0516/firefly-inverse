@@ -30,7 +30,7 @@ torch.backends.cudnn.benchmark = False
 import datetime
 import pandas as pd
 
-filename = '20191016-205855-5' # agent information
+filename = '20191016-205855' # agent information
 df = pd.read_csv('../firefly-inverse-data/data/' + filename + '_log.csv',
                  usecols=['discount_factor','process gain forward', 'process gain angular', 'process noise std forward',
                           'process noise std angular', 'obs gain forward', 'obs gain angular', 'obs noise std forward',
@@ -95,7 +95,7 @@ while episode <= MAX_EPISODE:
         mask = torch.tensor([1 - float(TimeEnd)]) # mask = 0: episode is over
 
         data = np.array([[tot_t, episode,  t, reward,
-                          reached_target.item(),action[0][0].item(), action[0][1].item(), torch.norm(x[0:2]).item(),
+                          reached_target.item(),action[0][0].item(), action[0][1].item(), torch.norm(x.view(-1)[0:2]).item(),
                           state[0][0].item(), state[0][1].item(), state[0][2].item(), state[0][3].item(),
                           state[0][5].item(), state[0][6].item(), state[0][7].item(), state[0][8].item(),
                           state[0][9].item(),
