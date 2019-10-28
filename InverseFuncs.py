@@ -89,22 +89,52 @@ def getLoss(agent, x_traj, obs_traj, a_traj, theta, env, gains_range, std_range)
             t += 1
             state = next_state
             b = next_b
-            """
-            if info['stop']:
-                # use x only the the beginning of a FF
-                t = torch.zeros(1)
-                b, state, _, _ = agent.Bstep.reset(x_traj[it], t, pro_gains, pro_noise_stds, goal_radius, gains_range, std_range, obs_gains, obs_noise_stds)  # reset monkey's internal model
-    
-            else:
-                state = agent.Bstep.Breshape(next_b, t, (pro_gains, pro_noise_stds, obs_gains, obs_noise_stds, goal_radius))  # state used in policy is different from belief
-                t += 1
-                """
+            
         logPr = torch.cat([logPr, logPr_ep])
 
 
     #neglogPr = -1 * logPr
     return logPr.sum()
-    #return logPr
+
+
+"""
+def getLoss(agent, x_traj, obs_traj, a_traj, theta, env, gains_range, std_range):
+    logPr = torch.FloatTensor([])
+
+    pro_gains, pro_noise_stds, obs_gains, obs_noise_stds, goal_radius = torch.split(theta.view(-1), 2)
+
+    env.pro_gains = pro_gains
+    env.pro_noise_stds = pro_noise_stds
+    env.goal_radius = goal_radius
+
+    for ep, x_traj_ep in enumerate(x_traj):
+        obs_traj_ep = obs_traj[ep]
+        a_traj_ep = a_traj[ep]
+        logPr_ep = torch.zeros(1)
+        t = torch.zeros(1)
+        x = x_traj_ep[0]
+        b, state, _, _ = agent.Bstep.reset(x, t, pro_gains, pro_noise_stds, goal_radius, gains_range,
+                                           std_range, obs_gains, obs_noise_stds)  # reset monkey's internal model
+
+        for it, next_ox in enumerate(obs_traj_ep):
+            action = agent.actor(state)
+
+            next_x, reached_target = env(x, action.view(-1))  # track true next_x of monkey
+            next_ox_ = agent.Bstep.observations(next_x)  # simulated observation
+
+            logPr_ep = logPr_ep + ((a_traj_ep[it] - action) ** 2).sum() / 2 + (((next_ox - next_ox_)/100) ** 2).sum() / 2  # + sign is because negative lor Pr
+            next_b, info = agent.Bstep(b, next_ox, a_traj_ep[it], env.box)  # action: use real data
+            next_state = agent.Bstep.Breshape(next_b, t, (pro_gains, pro_noise_stds, obs_gains, obs_noise_stds,
+                                                          goal_radius))  # state used in policy is different from belief
+            t += 1
+            state = next_state
+            b = next_b
+            x = next_x
+
+        logPr = torch.cat([logPr, logPr_ep])
+
+    return logPr.sum()
+"""
 
 def reset_theta(gains_range, std_range, goal_radius_range):
     pro_gains = torch.zeros(2)

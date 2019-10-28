@@ -10,7 +10,7 @@ R(b) = \int b(s)*r(s) ds = c *sqrt(det(S)/det(P))* exp(-0.5* mu^T*(invP - invP*S
 
 """
 import torch
-from parameter import *
+#from parameter import *
 
 def return_reward(episode, info, reached_target, b, goal_radius, REWARD, finetuning = 0):
     if info['stop']:  # receive reward if monkey stops. position does not matters
