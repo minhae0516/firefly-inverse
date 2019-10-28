@@ -43,8 +43,9 @@ tic = time.time()
 # DISCOUNT_FACTOR = df['discount_factor'][0]
 
 
-filename = '20191016-205855-221407' # agent information
-df = pd.read_csv('../firefly-inverse-data/data/' + filename + '_log.csv',
+filename = '20191016-205855-231215' # agent information
+filename_ = '20191016-205855'
+df = pd.read_csv('../firefly-inverse-data/data/' + filename_ + '_log.csv',
                  usecols=['discount_factor','process gain forward', 'process gain angular', 'process noise std forward',
                           'process noise std angular', 'obs gain forward', 'obs gain angular', 'obs noise std forward',
                           'obs noise std angular', 'goal radius'])
@@ -101,7 +102,7 @@ for num_thetas in range(10):
 
         loss_diff.append(torch.abs(prev_loss - loss))
 
-        if num_batches > 5 and np.sum(loss_diff) < 1e-2:
+        if num_batches > 5 and np.sum(loss_diff) < true_loss/10/2:
             break
 
         #if torch.abs(prev_loss - loss) < 1e-3:
