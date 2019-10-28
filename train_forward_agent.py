@@ -9,9 +9,10 @@ from DDPGv2Agent import Agent
 from DDPGv2Agent.noise import *
 from FireflyEnv import Model # firefly_task.py
 from collections import deque
-from DDPGv2Agent.rewards import *
+from DDPGv2Agent.rewards import return_reward
 from Config import Config
 import matplotlib.pyplot as plt
+import pandas as pd
 
 # read configuration parameters
 arg = Config()
