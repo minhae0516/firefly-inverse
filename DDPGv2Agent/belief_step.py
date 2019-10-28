@@ -169,7 +169,7 @@ class BeliefStep(nn.Module):
             P = (P + P.t()) / 2 + 1e-6 * I  # make symmetric to avoid computational overflows
 
         bx = bx.t() #return to a row vector
-        b = bx, P  # belief
+        b = bx.view(-1), P  # belief
 
 
         # terminal check
