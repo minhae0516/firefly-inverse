@@ -81,9 +81,9 @@ state_dim = env.state_dim
 action_dim = env.action_dim
 filename = arg.filename
 
-argument = {'filename': filename,
-            'argument': arg.__dict__}
-torch.save(argument, '../firefly-inverse-data/data/'+filename+'_arg.pkl')
+#argument = {'filename': filename,
+#            'argument': arg.__dict__}
+torch.save(arg, '../firefly-inverse-data/data/'+filename+'_arg.pkl')
 
 agent = Agent(state_dim, action_dim, arg,  filename, hidden_dim=128, gamma=arg.DISCOUNT_FACTOR, tau=0.001)
 

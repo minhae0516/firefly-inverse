@@ -136,6 +136,9 @@ def getLoss(agent, x_traj, obs_traj, a_traj, theta, env, gains_range, std_range)
     return logPr.sum()
 """
 
+
+
+
 def reset_theta(gains_range, std_range, goal_radius_range):
     pro_gains = torch.zeros(2)
     pro_noise_stds = torch.zeros(2)
