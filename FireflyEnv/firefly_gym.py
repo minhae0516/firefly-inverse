@@ -6,7 +6,6 @@ from gym.utils import seeding
 from FireflyEnv.firefly_task import Model
 from DDPGv2Agent.belief_step import BeliefStep
 from FireflyEnv.plotter_gym import Render
-from parameter import *
 from DDPGv2Agent.rewards import *
 
 

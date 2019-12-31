@@ -10,7 +10,6 @@ from torch.nn.parameter import Parameter
 from .rewards import *
 from .terminal import *
 
-#from parameter import *
 from FireflyEnv.env_utils import *
 from FireflyEnv.firefly_task import dynamics
 from FireflyEnv.plotter_gym import Render

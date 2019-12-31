@@ -30,8 +30,7 @@ torch.backends.cudnn.benchmark = False
 import datetime
 import pandas as pd
 
-filename = '20191016-205855-231215' # agent information
-#filename_ = '20191016-205855'
+filename = '20191227-195216' # agent information
 df = pd.read_csv('../firefly-inverse-data/data/' + filename+ '_log.csv',
                  usecols=['discount_factor','process gain forward', 'process gain angular', 'process noise std forward',
                           'process noise std angular', 'obs gain forward', 'obs gain angular', 'obs noise std forward',
@@ -53,7 +52,7 @@ x, b, state, pro_gains, pro_noise_stds, obs_gains, obs_noise_stds, goal_radius  
 state_dim = env.state_dim
 action_dim = env.action_dim
 
-MAX_EPISODE = 20
+MAX_EPISODE = 1000
 std = 0.00001 #0.05
 noise = Noise(action_dim, mean=0., std=std)
 

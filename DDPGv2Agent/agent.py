@@ -5,7 +5,6 @@ import torch.nn.functional as F
 from torch.optim import Adam # use Adam optimizer for deep neural net
 
 from .nets import Actor, Critic
-#from .nets_norm import Actor, Critic
 
 from .utils import *
 from .ReplayMemory import ReplayMemory
@@ -107,12 +106,6 @@ class Agent():
             'critic_dict': self.critic.state_dict(),
         }
 
-        #self.file = '../firefly-inverse-data/trained_agent/' + filename + '.pth.tar'
-
-        # if you want a single file, comment out this line
-        #path = './pretrained/ddpg_minhae/'+filename
-        #os.makedirs(path, exist_ok=True)
-        #self.file = path + '/' + 'ddpg_model_' + filename + '_ep'+ str(episode)+'.pth.tar'
 
         torch.save(state, self.file)
         if episode % 100 == 0:

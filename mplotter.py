@@ -3,7 +3,7 @@ import numpy as np
 import datetime
 import os
 import matplotlib.pyplot as plt
-from parameter import *
+#from parameter import *
 
 def learning_curve(filename, x, xlabel, ylabel):
     plt.figure()

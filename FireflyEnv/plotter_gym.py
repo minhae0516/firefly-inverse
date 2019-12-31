@@ -5,7 +5,7 @@ import torch
 from .env_utils import *
 from gym.envs.classic_control import rendering
 import matplotlib.pyplot as plt
-#from parameter import *
+
 import numpy as np
 
 

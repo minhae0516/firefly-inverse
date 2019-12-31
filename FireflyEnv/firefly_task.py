@@ -12,7 +12,6 @@ import torch.nn as nn
 from torch.nn.parameter import Parameter
 from .env_utils import *
 from .plotter_gym import Render
-#from parameter import *
 
 def dynamics(x, a, dt, box, pro_gains, pro_noise_stds):
     # dynamics
@@ -48,7 +47,9 @@ class Model(nn.Module):
         self.episode_len = arg.EPISODE_LEN
         self.episode_time = arg.EPISODE_LEN * self.dt
         self.box = arg.WORLD_SIZE #initial value
-        self.rendering = Render()
+        self.max_goal_radius = arg.goal_radius_range[0]
+        self.GOAL_RADIUS_STEP = arg.GOAL_RADIUS_STEP_SIZE
+        #self.rendering = Render()
         #self.reset()
 
     def reset(self, gains_range, std_range, goal_radius_range, goal_radius=None, pro_gains=None, pro_noise_stds=None):
@@ -72,16 +73,25 @@ class Model(nn.Module):
             self.pro_noise_stds = pro_noise_stds
 
         if goal_radius is None:
-            self.goal_radius = torch.zeros(1).uniform_(goal_radius_range[0], goal_radius_range[1])
+            self.max_goal_radius = min(self.max_goal_radius + self.GOAL_RADIUS_STEP, goal_radius_range[1])
+            #self.goal_radius = torch.zeros(1).uniform_(self.min_goal_radius, goal_radius_range[1])
+            self.goal_radius = torch.zeros(1).uniform_(goal_radius_range[0], self.max_goal_radius)
         else:
             self.goal_radius = goal_radius
 
 
         self.time = torch.zeros(1)
-        min_r = 0 #self.goal_radius.item()
-        #if self.box > 1.0:
+        min_r = self.goal_radius.item()
+        #if self.world_size > 1.0:
+        #    self.box = min(self.world_size, self.box + self.BOX_STEP_SIZE)
+        r = torch.zeros(1).uniform_(min_r, self.box)  # GOAL_RADIUS, self.box
+
+
+        #min_r = 0 #self.goal_radius.item()
+        ##if self.box > 1.0:
             #min_r = self.box - BOX_STEP_SIZE
-        r = torch.zeros(1).uniform_(min_r, self.box) # GOAL_RADIUS, self.box
+        #r = torch.zeros(1).uniform_(min_r, self.box) # GOAL_RADIUS, self.box
+
         loc_ang = torch.zeros(1).uniform_(-pi, pi) # location angel: to determine initial location
         px = r * torch.cos(loc_ang)
         py = r * torch.sin(loc_ang)
