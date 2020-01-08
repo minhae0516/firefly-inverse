@@ -123,3 +123,14 @@ class Model(nn.Module):
         pos = x.view(-1)[:2]
         r = torch.norm(pos).item()
         return pos, r
+
+    def input(self, x, obs_gains = None): # input to animal - no noise
+
+        if obs_gains is None:
+            obs_gains = self.obs_gains
+        vel, ang_vel = torch.split(x.view(-1),1)[-2:]
+
+        ovel = obs_gains[0] * vel
+        oang_vel = obs_gains[1] * ang_vel
+        ox = torch.stack((ovel, oang_vel))
+        return ox

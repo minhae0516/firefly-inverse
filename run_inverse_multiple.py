@@ -4,12 +4,11 @@ from torch.autograd import grad
 import pandas as pd
 from InverseFuncs import trajectory, getLoss, reset_theta, theta_range
 
-
 from DDPGv2Agent import Agent
 from FireflyEnv import Model # firefly_task.py
 from collections import deque
 from Inverse_Config import Inverse_Config
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 # read configuration parameters
 arg = Inverse_Config()
@@ -28,40 +27,38 @@ torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
 # if gpu is to be used
-CUDA = False
-device = "cpu"
+#CUDA = False
+#device = "cpu"
 
-#CUDA = torch.cuda.is_available()
-#device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+CUDA = torch.cuda.is_available()
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 tic = time.time()
 
 
-# #filename = '20191014-180128' #studpid agent
-# filename = '20191015-161114-2'
-# df = pd.read_csv('../firefly-inverse-data/data/' + filename + '_log.csv', usecols=['discount_factor'])
-# DISCOUNT_FACTOR = df['discount_factor'][0]
 
+filename = '20191231-172726-01081157' # agent information
 
-filename = '20191016-205855-231215' # agent information
-filename_ = '20191016-205855'
-df = pd.read_csv('../firefly-inverse-data/data/' + filename_ + '_log.csv',
-                 usecols=['discount_factor','process gain forward', 'process gain angular', 'process noise std forward',
-                          'process noise std angular', 'obs gain forward', 'obs gain angular', 'obs noise std forward',
-                          'obs noise std angular', 'goal radius'])
+learning_arg = torch.load('../firefly-inverse-data/data/20191231-172726_arg.pkl')
 
-DISCOUNT_FACTOR = df['discount_factor'][0]
-arg.gains_range = [np.floor(df['process gain forward'].min()), np.ceil(df['process gain forward'].max()),
-               np.floor(df['process gain angular'].min()), np.ceil(df['process gain angular'].max())]
+DISCOUNT_FACTOR = learning_arg.DISCOUNT_FACTOR
+arg.gains_range = learning_arg.gains_range
+arg.std_range = learning_arg.std_range
+arg.goal_radius_range = learning_arg.goal_radius_range
+arg.WORLD_SIZE = learning_arg.WORLD_SIZE
+arg.DELTA_T = learning_arg.DELTA_T
+arg.EPISODE_TIME = learning_arg.EPISODE_TIME
+arg.EPISODE_LEN = learning_arg.EPISODE_LEN
 
-arg.std_range = [df['process noise std forward'].min(), df['process noise std forward'].max(),
-               df['process noise std angular'].min(), df['process noise std angular'].max()]
-arg.goal_radius_range = [df['goal radius'].min(), df['goal radius'].max()]
 
 
 env = Model(arg) # build an environment
-agent = Agent(env.state_dim, env.action_dim, arg,  filename, hidden_dim=128, gamma=DISCOUNT_FACTOR, tau=0.001, device = "cpu")
+env.max_goal_radius = arg.goal_radius_range[1] # use the largest world size for goal radius
+env.box = arg.WORLD_SIZE
+agent = Agent(env.state_dim, env.action_dim, arg,  filename, hidden_dim=128, gamma=DISCOUNT_FACTOR, tau=0.001) #, device = "cpu")
 agent.load(filename)
+
+
 
 
 true_theta_log = []
@@ -71,10 +68,18 @@ result_log = []
 
 for num_thetas in range(10):
 
+    # true theta
     true_theta = reset_theta(arg.gains_range, arg.std_range, arg.goal_radius_range)
     true_theta_log.append(true_theta.data.clone())
-    x_traj, obs_traj, a_traj, _ = trajectory(agent, true_theta, arg.INVERSE_BATCH_SIZE, env, arg, arg.gains_range, arg.std_range, arg.goal_radius_range) # generate true trajectory
-    true_loss = getLoss(agent, x_traj, obs_traj, a_traj, true_theta, env, arg.gains_range, arg.std_range) # this is the lower bound of loss?
+    x_traj, obs_traj, a_traj, _ = trajectory(agent, true_theta, env, arg, arg.gains_range, arg.std_range,
+                                             arg.goal_radius_range, arg.NUM_EP)  # generate true trajectory
+    true_loss = getLoss(agent, x_traj, a_traj, true_theta, env, arg.gains_range, arg.std_range, arg.PI_STD,
+                        arg.NUM_SAMPLES)  # this is the lower bound of loss?
+    print("true loss:{}".format(true_loss))
+    print("true_theta:{}".format(true_theta))
+
+
+
 
 
     #theta = nn.Parameter(true_theta.data.clone()+0.5*true_theta.data.clone())
@@ -82,42 +87,40 @@ for num_thetas in range(10):
     ini_theta = theta.data.clone()
 
 
-    loss_log = deque(maxlen=5000)
-    theta_log = deque(maxlen=5000)
+    loss_log = deque(maxlen=2000)
+    theta_log = deque(maxlen=2000)
     optT = torch.optim.Adam([theta], lr=1e-3)
     prev_loss = 100000
     loss_diff = deque(maxlen=5)
 
 
-    for num_batches in range(5000):
-        loss = getLoss(agent, x_traj, obs_traj, a_traj, theta, env, arg.gains_range, arg.std_range)
+    for num_batches in range(10000):
+        loss = getLoss(agent, x_traj, a_traj, theta, env, arg.gains_range, arg.std_range, arg.PI_STD, arg.NUM_SAMPLES)
         loss_log.append(loss.data)
         optT.zero_grad()
         loss.backward(retain_graph=True)
         optT.step() # performing single optimize step: this changes theta
         theta = theta_range(theta, arg.gains_range, arg.std_range, arg.goal_radius_range) # keep inside of trained range
         theta_log.append(theta.data.clone())
-        if loss < true_loss:
-            print('loss:', loss.data, 'true loss:', true_loss.data)
 
+        #if loss < true_loss:
+        #    print('loss:', loss.data, 'true loss:', true_loss.data)
+
+        #if torch.abs(prev_loss - loss) < 1e-4:
+         #   break
         loss_diff.append(torch.abs(prev_loss - loss))
 
-        if num_batches > 5 and np.sum(loss_diff) < true_loss/10/2:
+        if num_batches > 5 and np.sum(loss_diff) < 1:
             break
-
-        #if torch.abs(prev_loss - loss) < 1e-3:
-        #    break
         prev_loss = loss.data
 
         if num_batches%100 == 0:
-            print("num:{}, loss:{}, true_loss:{}".format(num_batches, np.round(loss.data.item(), 6), true_loss.data))
-            print("num:{},theta diff sum:{}".format(num_batches, 1e6 * (true_theta - theta.data.clone()).sum().data))
-            print("num:{}, initial_theta:{}, \n converged_theta:{},\n true theta:{}".format(num_batches, ini_theta, theta.data.clone(),
-                                                                                    true_theta))
+            print("num:{}, loss:{}".format(num_batches, np.round(loss.data.item(), 6)))
+            #print("num:{},theta diff sum:{}".format(num_batches, 1e6 * (true_theta - theta.data.clone()).sum().data))
+            print("num:{}, initial_theta:{}, \n converged_theta:{}".format(num_batches, ini_theta, theta.data.clone()))
 
     #
-    final_theta_log.append(theta.data.clone())
-    loss = getLoss(agent, x_traj, obs_traj, a_traj, theta, env, arg.gains_range, arg.std_range)
+    loss = getLoss(agent, x_traj, a_traj, theta, env, arg.gains_range, arg.std_range, arg.PI_STD, arg.NUM_SAMPLES)
     print("loss:{}".format(loss))
 
     toc = time.time()
@@ -130,7 +133,6 @@ for num_thetas in range(10):
         H[i] = grad(grads[i], theta, retain_graph=True)[0]
     I = H.inverse()
     stderr = torch.sqrt(I.diag())
-    stderr_log.append(stderr)
 
 
     result = {'true_theta': true_theta,
@@ -144,10 +146,8 @@ for num_thetas in range(10):
               'arguments': arg,
               'stderr': stderr
               }
-
     result_log.append(result)
 
-
-torch.save(result_log, '../firefly-inverse-data/data/'+filename+'_result_log.pkl')
+torch.save(result_log, '../firefly-inverse-data/data/'+filename+'_multiple_result.pkl')
 
 print('done')

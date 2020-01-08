@@ -1,18 +1,19 @@
 # this file is for displaying play animation by loading pretrained ddpg network
 
 import gym
-#from gym.wrappers.monitoring.video_recorder import VideoRecorder
 import time
 
 import pandas as pd
 from mplotter import *
 from DDPGv2Agent import Agent, Noise
 from collections import deque
+from FireflyEnv.env_utils import range_angle
 rewards = deque(maxlen=100)
 
 # read configuration parameters
 from Config import Config
 arg = Config()
+
 # fix random seed
 import random
 random.seed(arg.SEED_NUMBER)
@@ -30,7 +31,11 @@ torch.backends.cudnn.benchmark = False
 import datetime
 import pandas as pd
 
-filename = '20191227-195216' # agent information
+
+
+filename = '20191231-172726' # agent information
+arg = torch.load('../firefly-inverse-data/data/'+filename+ '_arg.pkl')
+
 df = pd.read_csv('../firefly-inverse-data/data/' + filename+ '_log.csv',
                  usecols=['discount_factor','process gain forward', 'process gain angular', 'process noise std forward',
                           'process noise std angular', 'obs gain forward', 'obs gain angular', 'obs noise std forward',
@@ -48,6 +53,7 @@ goal_radius_range = [df['goal radius'].min(), df['goal radius'].max()]
 
 env = gym.make('FireflyTorch-v0') #,PROC_NOISE_STD,OBS_NOISE_STD)
 env.setup(arg)
+env.model.max_goal_radius = goal_radius_range[1] # use the largest world size for goal radius
 x, b, state, pro_gains, pro_noise_stds, obs_gains, obs_noise_stds, goal_radius  = env.reset(gains_range, std_range, goal_radius_range)
 state_dim = env.state_dim
 action_dim = env.action_dim
@@ -64,13 +70,15 @@ episode = 0.
 
 
 COLUMNS = ['total time', 'ep', 'time step', 'reward', 'goal',
-           'a_vel', 'a_ang', 'true_r',
+           'a_vel', 'a_ang', 'true_r', 'true_rel_ang',
            'r', 'rel_ang', 'vel', 'ang_vel',
            'vecL1','vecL2','vecL3','vecL4','vecL5','vecL6','vecL7','vecL8','vecL9','vecL10',
            'vecL11','vecL12','vecL13','vecL14','vecL15',
            'process gain forward', 'process gain angular', 'process noise std forward', 'process noise std angular',
            'obs gain forward', 'obs gain angular', 'obs noise std forward', 'obs noise std angular', 'goal radius',
            'box_size', 'discount_factor']
+
+
 
 history = pd.DataFrame(columns=COLUMNS)
 
@@ -94,8 +102,10 @@ while episode <= MAX_EPISODE:
         TimeEnd = (t+1 == arg.EPISODE_LEN) # if the monkey can't catch the firefly in EPISODE_LEN, reset the game.
         mask = torch.tensor([1 - float(TimeEnd)]) # mask = 0: episode is over
 
-        data = np.array([[tot_t, episode,  t, reward,
-                          reached_target.item(),action[0][0].item(), action[0][1].item(), torch.norm(x.view(-1)[0:2]).item(),
+        data = np.array([[tot_t, episode, t, reward,
+                          reached_target.item(), action[0][0].item(), action[0][1].item(),
+                          torch.norm(x.view(-1)[0:2]).item(),
+                          range_angle(x.view(-1)[2] - torch.atan2(-x.view(-1)[1], -x.view(-1)[0]).view(-1)).item(),
                           state[0][0].item(), state[0][1].item(), state[0][2].item(), state[0][3].item(),
                           state[0][5].item(), state[0][6].item(), state[0][7].item(), state[0][8].item(),
                           state[0][9].item(),
@@ -107,6 +117,7 @@ while episode <= MAX_EPISODE:
                           obs_gains[0].item(), obs_gains[1].item(), obs_noise_stds[0].item(), obs_noise_stds[1].item(),
                           goal_radius.item(),
                           arg.WORLD_SIZE, DISCOUNT_FACTOR]])
+
 
         df1 = pd.DataFrame(data, columns=COLUMNS)
         history = history.append(df1)
