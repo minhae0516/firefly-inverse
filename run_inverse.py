@@ -77,7 +77,7 @@ ini_theta = theta.data.clone()
 
 loss_log = deque(maxlen=10000)
 theta_log = deque(maxlen=10000)
-optT = torch.optim.Adam([theta], lr=1e-3)
+optT = torch.optim.Adam([theta], lr=arg.ADAM_LR)
 prev_loss = 100000
 loss_diff = deque(maxlen=5)
 

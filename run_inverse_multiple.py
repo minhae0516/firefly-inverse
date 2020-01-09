@@ -89,7 +89,7 @@ for num_thetas in range(10):
 
     loss_log = deque(maxlen=2000)
     theta_log = deque(maxlen=2000)
-    optT = torch.optim.Adam([theta], lr=1e-3)
+    optT = torch.optim.Adam([theta], lr=arg.ADAM_LR)
     prev_loss = 100000
     loss_diff = deque(maxlen=5)
 
@@ -115,9 +115,9 @@ for num_thetas in range(10):
         prev_loss = loss.data
 
         if num_batches%100 == 0:
-            print("num:{}, loss:{}".format(num_batches, np.round(loss.data.item(), 6)))
+            print("num_theta:{}, num:{}, loss:{}".format(num_thetas, num_batches, np.round(loss.data.item(), 6)))
             #print("num:{},theta diff sum:{}".format(num_batches, 1e6 * (true_theta - theta.data.clone()).sum().data))
-            print("num:{}, initial_theta:{}, \n converged_theta:{}".format(num_batches, ini_theta, theta.data.clone()))
+            print("num_theta:{},num:{}, initial_theta:{}, \n converged_theta:{}".format(num_thetas,num_batches, ini_theta, theta.data.clone()))
 
     #
     loss = getLoss(agent, x_traj, a_traj, theta, env, arg.gains_range, arg.std_range, arg.PI_STD, arg.NUM_SAMPLES)
@@ -148,6 +148,6 @@ for num_thetas in range(10):
               }
     result_log.append(result)
 
-torch.save(result_log, '../firefly-inverse-data/data/'+filename+'_multiple_result.pkl')
+torch.save(result_log, '../firefly-inverse-data/data/'+filename+ arg.PI_STD+'_multiple_result.pkl')
 
 print('done')
