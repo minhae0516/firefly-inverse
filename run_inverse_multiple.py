@@ -114,7 +114,7 @@ for num_thetas in range(10):
             break
         prev_loss = loss.data
 
-        if num_batches%100 == 0:
+        if num_batches%50 == 0:
             print("num_theta:{}, num:{}, loss:{}".format(num_thetas, num_batches, np.round(loss.data.item(), 6)))
             #print("num:{},theta diff sum:{}".format(num_batches, 1e6 * (true_theta - theta.data.clone()).sum().data))
             print("num_theta:{},num:{}, initial_theta:{}, \n converged_theta:{}".format(num_thetas,num_batches, ini_theta, theta.data.clone()))
