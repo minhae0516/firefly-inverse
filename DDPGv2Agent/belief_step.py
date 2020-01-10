@@ -186,6 +186,15 @@ class BeliefStep(nn.Module):
         ox = torch.stack((ovel, oang_vel))
         return ox
 
+    def observations_mean(self, x): # observation without noise
+
+        vel, ang_vel = torch.split(x.view(-1),1)[-2:]
+
+        ovel = self.obs_gains[0] * vel
+        oang_vel = self.obs_gains[1] * ang_vel
+        ox = torch.stack((ovel, oang_vel))
+        return ox
+
     def A(self, x_): # F in wiki
         dt = self.dt
         px, py, ang, vel, ang_vel = torch.split(x_.view(-1),1)

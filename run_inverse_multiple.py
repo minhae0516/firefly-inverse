@@ -94,7 +94,7 @@ for num_thetas in range(10):
     loss_diff = deque(maxlen=5)
 
 
-    for num_batches in range(10000):
+    for num_batches in range(2000):
         loss = getLoss(agent, x_traj, a_traj, theta, env, arg.gains_range, arg.std_range, arg.PI_STD, arg.NUM_SAMPLES)
         loss_log.append(loss.data)
         optT.zero_grad()
@@ -103,11 +103,7 @@ for num_thetas in range(10):
         theta = theta_range(theta, arg.gains_range, arg.std_range, arg.goal_radius_range) # keep inside of trained range
         theta_log.append(theta.data.clone())
 
-        #if loss < true_loss:
-        #    print('loss:', loss.data, 'true loss:', true_loss.data)
 
-        #if torch.abs(prev_loss - loss) < 1e-4:
-         #   break
         loss_diff.append(torch.abs(prev_loss - loss))
 
         if num_batches > 5 and np.sum(loss_diff) < 1:
@@ -117,7 +113,17 @@ for num_thetas in range(10):
         if num_batches%50 == 0:
             print("num_theta:{}, num:{}, loss:{}".format(num_thetas, num_batches, np.round(loss.data.item(), 6)))
             #print("num:{},theta diff sum:{}".format(num_batches, 1e6 * (true_theta - theta.data.clone()).sum().data))
-            print("num_theta:{},num:{}, initial_theta:{}, \n converged_theta:{}".format(num_thetas,num_batches, ini_theta, theta.data.clone()))
+            print("num_theta:{},num:{},  \n converged_theta:{}".format(num_thetas,num_batches, theta.data.clone()))
+
+            grads = grad(loss, theta, create_graph=True)[0]
+            H = torch.zeros(9, 9)
+            for i in range(9):
+                H[i] = grad(grads[i], theta, retain_graph=True)[0]
+            I = H.inverse()
+            stderr = torch.sqrt(I.diag())
+
+            if (stderr[[0,1,4,5,8]]<0.05).sum() >=4:
+                break
 
     #
     loss = getLoss(agent, x_traj, a_traj, theta, env, arg.gains_range, arg.std_range, arg.PI_STD, arg.NUM_SAMPLES)
@@ -148,6 +154,6 @@ for num_thetas in range(10):
               }
     result_log.append(result)
 
-torch.save(result_log, '../firefly-inverse-data/data/'+filename+ arg.PI_STD+'_multiple_result.pkl')
+torch.save(result_log, '../firefly-inverse-data/data/'+filename + str(np.around(arg.PI_STD, decimals = 2))+'_2multiple_result.pkl')
 
 print('done')

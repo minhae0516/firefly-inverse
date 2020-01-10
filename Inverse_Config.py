@@ -32,7 +32,7 @@ class Inverse_Config:
         self.NUM_SAMPLES = 5 # number of particles
         self.NUM_EP = 100
 
-        self.ADAM_LR = 1e-2
+        self.ADAM_LR = 5e-3
 
 
         #self.action_vel_weight = 1

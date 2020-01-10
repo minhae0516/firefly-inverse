@@ -89,8 +89,9 @@ def getLoss(agent, x_traj, a_traj, theta, env, gains_range, std_range, PI_STD, N
             for it, next_x in enumerate(x_traj_ep):
                 action = agent.actor(state) # simulated acton
 
-                next_ox = env.input(next_x, obs_gains) # multiplied by observation gain, no noise
-                next_ox_ = agent.Bstep.observations(next_x)  # simulated observation
+                #next_ox = env.input(next_x, obs_gains) # multiplied by observation gain, no noise
+                next_ox = agent.Bstep.observations_mean(next_x) # multiplied by observation gain, no noise
+                next_ox_ = agent.Bstep.observations(next_x)  # simulated observation (with noise)
 
                 action_loss = ((action - a_traj_ep[it] ) ** 2 / 2 /(PI_STD**2)).sum()
                 obs_loss = ((next_ox_ - next_ox).view(-1) ** 2/2/(obs_noise_stds**2) ).sum()
