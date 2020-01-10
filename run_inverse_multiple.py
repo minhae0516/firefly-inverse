@@ -106,7 +106,7 @@ for num_thetas in range(10):
 
         loss_diff.append(torch.abs(prev_loss - loss))
 
-        if num_batches > 5 and np.sum(loss_diff) < 1:
+        if num_batches > 5 and np.sum(loss_diff) < 100:
             break
         prev_loss = loss.data
 
@@ -121,6 +121,7 @@ for num_thetas in range(10):
                 H[i] = grad(grads[i], theta, retain_graph=True)[0]
             I = H.inverse()
             stderr = torch.sqrt(I.diag())
+            print("stderr:{}".format(stderr))
 
             if (stderr[[0,1,4,5,8]]<0.05).sum() >=4:
                 break
@@ -154,6 +155,6 @@ for num_thetas in range(10):
               }
     result_log.append(result)
 
-torch.save(result_log, '../firefly-inverse-data/data/'+filename + str(np.around(arg.PI_STD, decimals = 2))+'_2multiple_result.pkl')
+    torch.save(result_log, '../firefly-inverse-data/data/'+filename + str(np.around(arg.PI_STD, decimals = 2))+'_2multiple_result.pkl')
 
 print('done')
