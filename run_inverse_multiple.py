@@ -157,6 +157,6 @@ for num_thetas in range(10):
               }
     result_log.append(result)
 
-    torch.save(result_log, '../firefly-inverse-data/data/'+filename +"EP"str(arg.NUM_EP)+ str(np.around(arg.PI_STD, decimals = 2))+'_multiple_result.pkl')
+    torch.save(result_log, '../firefly-inverse-data/data/'+filename +"EP"+str(arg.NUM_EP)+ str(np.around(arg.PI_STD, decimals = 2))+'_multiple_result.pkl')
 
 print('done')
