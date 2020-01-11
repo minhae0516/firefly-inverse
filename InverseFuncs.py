@@ -2,6 +2,8 @@
 # collections of functions for inverse control
 
 import torch
+import numpy as np
+from numpy import pi
 
 def trajectory(agent, theta, env, arg, gains_range, std_range, goal_radius_range, NUM_EP):
     pro_gains, pro_noise_stds, obs_gains, obs_noise_stds,  goal_radius = torch.split(theta.view(-1), 2)
@@ -93,9 +95,9 @@ def getLoss(agent, x_traj, a_traj, theta, env, gains_range, std_range, PI_STD, N
                 next_ox = agent.Bstep.observations_mean(next_x) # multiplied by observation gain, no noise
                 next_ox_ = agent.Bstep.observations(next_x)  # simulated observation (with noise)
 
-                action_loss = ((action - a_traj_ep[it] ) ** 2 / 2 /(PI_STD**2)).sum()
-                obs_loss = ((next_ox_ - next_ox).view(-1) ** 2/2/(obs_noise_stds**2) ).sum()
-                logPr_ep = logPr_ep + action_loss + obs_loss
+                action_loss =np.log(np.sqrt(2* pi)*PI_STD) + (action - a_traj_ep[it] ) ** 2 / 2 /(PI_STD**2)
+                obs_loss = torch.log(np.sqrt(2* pi)*obs_noise_stds) +(next_ox_ - next_ox).view(-1) ** 2/2/(obs_noise_stds**2)
+                logPr_ep = logPr_ep + 10+(action_loss + obs_loss).sum()
                 #logPr_ep = logPr_ep + ((action - a_traj_ep[it] ) ** 2 / 2 /(PI_STD**2)).sum()+ ((next_ox_ - next_ox).view(-1) ** 2/2/(obs_noise_stds**2) ).sum() # + sign is because negative lor Pr
                 next_b, info = agent.Bstep(b, next_ox_, a_traj_ep[it], env.box)  # action: use real data
                 next_state = agent.Bstep.Breshape(next_b, t, (pro_gains, pro_noise_stds, obs_gains, obs_noise_stds,
