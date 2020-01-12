@@ -1,9 +1,7 @@
 #import torch
 #import torch.nn as nn
 #from torch.autograd import grad
-import multiprocessing
-from joblib import Parallel, delayed
-from tqdm import tqdm
+
 
 from InverseFuncs import trajectory, getLoss, reset_theta, theta_range
 from single_inverse import single_inverse
@@ -34,8 +32,8 @@ device = "cpu"
 #CUDA = torch.cuda.is_available()
 #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-
-
+import multiprocessing
+num_cores = multiprocessing.cpu_count()
 
 
 filename = '20191231-172726-01081157' # agent information
@@ -76,7 +74,7 @@ for num_thetas in range(10):
     x_traj, obs_traj, a_traj, _ = trajectory(agent, true_theta, env, arg, arg.gains_range, arg.std_range,
                                              arg.goal_radius_range, arg.NUM_EP)  # generate true trajectory
     true_loss = getLoss(agent, x_traj, a_traj, true_theta, env, arg.gains_range, arg.std_range, arg.PI_STD,
-                        arg.NUM_SAMPLES)  # this is the lower bound of loss?
+                        arg.NUM_SAMPLES, num_cores)  # this is the lower bound of loss?
 
     true_loss_log.append(true_loss)
 
@@ -84,11 +82,13 @@ for num_thetas in range(10):
     #print("true_theta:{}".format(true_theta))
 
 
-num_cores = multiprocessing.cpu_count()
-print("{} cores are available".format(num_cores))
-inputs = tqdm(true_theta_log)
 
-result_log = Parallel(n_jobs=num_cores)(delayed(single_inverse)(true_theta, arg, env, agent, x_traj, a_traj, filename, n) for n, true_theta in enumerate(inputs))
-torch.save(result_log, '../firefly-inverse-data/data/'+filename +"EP"+str(arg.NUM_EP)+ str(np.around(arg.PI_STD, decimals = 2))+'_multiple_result.pkl')
+for n, true_theta in enumerate(true_theta_log):
+    result = single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n)
+    result_log.append(result)
+    torch.save(result_log, '../firefly-inverse-data/data/' + filename + "EP" + str(arg.NUM_EP) + str(
+        np.around(arg.PI_STD, decimals=2)) + '_multiple_result.pkl')
+
+#result_log = Parallel(n_jobs=num_cores)(delayed(single_inverse)(true_theta, arg, env, agent, x_traj, a_traj, filename, n) for n, true_theta in enumerate(inputs))
 
 print('done')
