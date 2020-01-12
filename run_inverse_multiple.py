@@ -115,18 +115,7 @@ for num_thetas in range(10):
             #print("num:{},theta diff sum:{}".format(num_batches, 1e6 * (true_theta - theta.data.clone()).sum().data))
             print("num_theta:{},num:{},  \n converged_theta:{}".format(num_thetas,num_batches, theta.data.clone()))
 
-            """
-            grads = grad(loss, theta, create_graph=True)[0]
-            H = torch.zeros(9, 9)
-            for i in range(9):
-                H[i] = grad(grads[i], theta, retain_graph=True)[0]
-            I = H.inverse()
-            stderr = torch.sqrt(I.diag())
-            print("stderr:{}".format(stderr))
 
-            if (stderr[[0,1,4,5,8]]<0.05).sum() >=4:
-                break
-            """
 
     #
     loss = getLoss(agent, x_traj, a_traj, theta, env, arg.gains_range, arg.std_range, arg.PI_STD, arg.NUM_SAMPLES)
