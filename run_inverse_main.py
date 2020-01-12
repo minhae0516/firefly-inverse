@@ -78,16 +78,18 @@ for num_thetas in range(10):
 
     true_loss_log.append(true_loss)
 
-    #print("true loss:{}".format(true_loss))
-    #print("true_theta:{}".format(true_theta))
+    print("true loss:{}".format(true_loss_log))
+    print("true_theta:{}".format(true_theta_log))
 
-
-
-for n, true_theta in enumerate(true_theta_log):
-    result = single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n)
+    result = single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, num_thetas)
     result_log.append(result)
     torch.save(result_log, '../firefly-inverse-data/data/' + filename + "EP" + str(arg.NUM_EP) + str(
         np.around(arg.PI_STD, decimals=2)) + '_multiple_result.pkl')
+
+
+
+#for n, true_theta in enumerate(true_theta_log):
+
 
 #result_log = Parallel(n_jobs=num_cores)(delayed(single_inverse)(true_theta, arg, env, agent, x_traj, a_traj, filename, n) for n, true_theta in enumerate(inputs))
 
