@@ -5,9 +5,6 @@ import torch
 import numpy as np
 from numpy import pi
 
-from joblib import Parallel, delayed
-from tqdm import tqdm
-
 def trajectory(agent, theta, env, arg, gains_range, std_range, goal_radius_range, NUM_EP):
     pro_gains, pro_noise_stds, obs_gains, obs_noise_stds,  goal_radius = torch.split(theta.view(-1), 2)
 
@@ -71,7 +68,8 @@ def trajectory(agent, theta, env, arg, gains_range, std_range, goal_radius_range
 
 
 # MCEM based approach
-def getLoss(agent, x_traj, a_traj, theta, env, gains_range, std_range, PI_STD, NUM_SAMPLES,num_cores):
+def getLoss(agent, x_traj, a_traj, theta, env, gains_range, std_range, PI_STD, NUM_SAMPLES):
+
     logPr = torch.FloatTensor([])
 
     pro_gains, pro_noise_stds, obs_gains, obs_noise_stds, goal_radius = torch.split(theta.view(-1), 2)
@@ -82,46 +80,36 @@ def getLoss(agent, x_traj, a_traj, theta, env, gains_range, std_range, PI_STD, N
 
     for num_it in range(NUM_SAMPLES):
 
+        for ep, x_traj_ep in enumerate(x_traj):
+            a_traj_ep = a_traj[ep]
+            logPr_ep = torch.zeros(1)
+            t = torch.zeros(1)
+            x = x_traj_ep[0].view(-1)
+            b, state, _, _ = agent.Bstep.reset(x, t, pro_gains, pro_noise_stds, goal_radius, gains_range,
+                                               std_range, obs_gains, obs_noise_stds)  # reset monkey's internal model
 
-        logPr_ep = Parallel(n_jobs=num_cores)(delayed(single_ep)(ep, agent, x_traj_ep, a_traj, pro_gains,
-                                                                 pro_noise_stds, goal_radius, gains_range, std_range,
-                                                                 obs_gains, obs_noise_stds, PI_STD, env.box)
-                                              for ep, x_traj_ep in enumerate(tqdm(x_traj)))
-        logPr = torch.cat([logPr, np.sum(logPr_ep)])
+            for it, next_x in enumerate(x_traj_ep):
+                action = agent.actor(state) # simulated acton
+
+                #next_ox = env.input(next_x, obs_gains) # multiplied by observation gain, no noise
+                next_ox = agent.Bstep.observations_mean(next_x) # multiplied by observation gain, no noise
+                next_ox_ = agent.Bstep.observations(next_x)  # simulated observation (with noise)
+
+                action_loss =np.log(np.sqrt(2* pi)*PI_STD) + (action - a_traj_ep[it] ) ** 2 / 2 /(PI_STD**2)
+                obs_loss = torch.log(np.sqrt(2* pi)*obs_noise_stds) +(next_ox_ - next_ox).view(-1) ** 2/2/(obs_noise_stds**2)
+                logPr_ep = logPr_ep + 10+(action_loss + obs_loss).sum()
+                #logPr_ep = logPr_ep + ((action - a_traj_ep[it] ) ** 2 / 2 /(PI_STD**2)).sum()+ ((next_ox_ - next_ox).view(-1) ** 2/2/(obs_noise_stds**2) ).sum() # + sign is because negative lor Pr
+                next_b, info = agent.Bstep(b, next_ox_, a_traj_ep[it], env.box)  # action: use real data
+                next_state = agent.Bstep.Breshape(next_b, t, (pro_gains, pro_noise_stds, obs_gains, obs_noise_stds,
+                                                              goal_radius))  # state used in policy is different from belief
+                t += 1
+                state = next_state
+                b = next_b
+
+
+            logPr = torch.cat([logPr, logPr_ep])
 
     return logPr.sum()
-
-
-def single_ep(ep, agent, x_traj_ep, a_traj, pro_gains, pro_noise_stds, goal_radius, gains_range,
-              std_range, obs_gains, obs_noise_stds, PI_STD, box):
-    a_traj_ep = a_traj[ep]
-    logPr_ep = torch.zeros(1)
-    t = torch.zeros(1)
-    x = x_traj_ep[0].view(-1)
-    b, state, _, _ = agent.Bstep.reset(x, t, pro_gains, pro_noise_stds, goal_radius, gains_range,
-                                       std_range, obs_gains, obs_noise_stds)  # reset monkey's internal model
-
-    for it, next_x in enumerate(x_traj_ep):
-        action = agent.actor(state)  # simulated acton
-
-        # next_ox = env.input(next_x, obs_gains) # multiplied by observation gain, no noise
-        next_ox = agent.Bstep.observations_mean(next_x)  # multiplied by observation gain, no noise
-        next_ox_ = agent.Bstep.observations(next_x)  # simulated observation (with noise)
-
-        action_loss = np.log(np.sqrt(2 * pi) * PI_STD) + (action - a_traj_ep[it]) ** 2 / 2 / (PI_STD ** 2)
-        obs_loss = torch.log(np.sqrt(2 * pi) * obs_noise_stds) + (next_ox_ - next_ox).view(-1) ** 2 / 2 / (
-                    obs_noise_stds ** 2)
-        logPr_ep = logPr_ep + 10 + (action_loss + obs_loss).sum()
-        # logPr_ep = logPr_ep + ((action - a_traj_ep[it] ) ** 2 / 2 /(PI_STD**2)).sum()+ ((next_ox_ - next_ox).view(-1) ** 2/2/(obs_noise_stds**2) ).sum() # + sign is because negative lor Pr
-        next_b, info = agent.Bstep(b, next_ox_, a_traj_ep[it], box)  # action: use real data
-        next_state = agent.Bstep.Breshape(next_b, t, (pro_gains, pro_noise_stds, obs_gains, obs_noise_stds,
-                                                      goal_radius))  # state used in policy is different from belief
-        t += 1
-        state = next_state
-        b = next_b
-
-    return logPr_ep
-
 
 """
 # action only loss function

@@ -1,6 +1,5 @@
 import torch
-#from tqdm import tqdm
-import multiprocessing
+from tqdm import tqdm
 
 import torch.nn as nn
 from torch.autograd import grad
@@ -11,7 +10,6 @@ from collections import deque
 import torch
 import numpy as np
 import time
-
 
 
 
@@ -29,11 +27,9 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n):
     prev_loss = 100000
     loss_diff = deque(maxlen=5)
 
-    num_cores = multiprocessing.cpu_count()
-    print("{} cores are available".format(num_cores))
 
-    for num_batches in range(2000):
-        loss = getLoss(agent, x_traj, a_traj, theta, env, arg.gains_range, arg.std_range, arg.PI_STD, arg.NUM_SAMPLES, num_cores)
+    for num_batches in tqdm(range(2000)):
+        loss = getLoss(agent, x_traj, a_traj, theta, env, arg.gains_range, arg.std_range, arg.PI_STD, arg.NUM_SAMPLES)
         loss_log.append(loss.data)
         optT.zero_grad()
         loss.backward(retain_graph=True)
@@ -58,7 +54,7 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n):
 
 
     #
-    loss = getLoss(agent, x_traj, a_traj, theta, env, arg.gains_range, arg.std_range, arg.PI_STD, arg.NUM_SAMPLES, num_cores)
+    loss = getLoss(agent, x_traj, a_traj, theta, env, arg.gains_range, arg.std_range, arg.PI_STD, arg.NUM_SAMPLES)
     #print("loss:{}".format(loss))
 
     toc = time.time()
