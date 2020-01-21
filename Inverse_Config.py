@@ -9,7 +9,7 @@ import datetime
 
 class Inverse_Config:
     def __init__(self):
-        self.SEED_NUMBER = 1
+        self.SEED_NUMBER = 1004
 
         self.WORLD_SIZE = 1.0  # 2.5
         self.ACTION_DIM = 2
@@ -28,7 +28,7 @@ class Inverse_Config:
         self.REWARD = 10  # for max reward
         self.BOX_STEP_SIZE = 0
         self.GOAL_RADIUS_STEP_SIZE = 0
-        self.PI_STD = 0.05 #1/5 # policy std --> just normalizer in this code
+        self.PI_STD = 0.1 #1/5 # policy std --> just normalizer in this code
         self.NUM_SAMPLES = 5 # number of particles
         self.NUM_EP = 500
 

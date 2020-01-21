@@ -80,8 +80,9 @@ for num_thetas in range(10):
 
     true_loss_log.append(true_loss)
 
-    #print("true loss:{}".format(true_loss))
-    #print("true_theta:{}".format(true_theta))
+    print("true_theta:{}".format(true_theta_log))
+    print("true loss:{}".format(true_loss_log))
+
 
 
 num_cores = multiprocessing.cpu_count()

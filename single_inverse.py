@@ -28,7 +28,7 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n):
     loss_diff = deque(maxlen=5)
 
 
-    for num_batches in tqdm(range(2000)):
+    for it in tqdm(range(1000)):
         loss = getLoss(agent, x_traj, a_traj, theta, env, arg.gains_range, arg.std_range, arg.PI_STD, arg.NUM_SAMPLES)
         loss_log.append(loss.data)
         optT.zero_grad()
@@ -40,15 +40,15 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n):
 
         loss_diff.append(torch.abs(prev_loss - loss))
 
-        if num_batches > 5 and np.sum(loss_diff) < 100:
+        if it > 5 and np.sum(loss_diff) < 100:
             break
         prev_loss = loss.data
 
 
-        if num_batches%50 == 0:
-            #print("num_theta:{}, num:{}, loss:{}".format(n, num_batches, np.round(loss.data.item(), 6)))
-            #print("num:{},theta diff sum:{}".format(num_batches, 1e6 * (true_theta - theta.data.clone()).sum().data))
-            print("num_theta:{}, num:{},  loss:{}\n converged_theta:{}".format(n, num_batches,np.round(loss.data.item(), 6),theta.data.clone()))
+        if it%50 == 0:
+            #print("num_theta:{}, num:{}, loss:{}".format(n, it, np.round(loss.data.item(), 6)))
+            #print("num:{},theta diff sum:{}".format(it, 1e6 * (true_theta - theta.data.clone()).sum().data))
+            print("num_theta:{}, num:{},  loss:{}\n converged_theta:{}".format(n, it, np.round(loss.data.item(), 6),theta.data.clone()))
 
 
 
@@ -76,7 +76,7 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n):
               'loss_log': loss_log,
               'filename': filename,
               'num_theta': n,
-              'num_batches': num_batches,
+              'converging_it': it,
               'duration': toc-tic,
               'arguments': arg,
               'stderr': stderr
