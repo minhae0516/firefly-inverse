@@ -4,7 +4,7 @@
 
 
 from InverseFuncs import trajectory, getLoss, reset_theta, theta_range
-from single_inverse import single_inverse
+from single_inverse_part_theta import single_inverse
 
 from DDPGv2Agent import Agent
 from FireflyEnv import Model # firefly_task.py
@@ -69,8 +69,7 @@ result_log = []
 for num_thetas in range(1):
 
     # true theta
-    #true_theta = reset_theta(arg.gains_range, arg.std_range, arg.goal_radius_range)
-    true_theta = torch.tensor([11.4042, 8.6168, 0.2885, 0.9043, 11.1173, 8.1504, 1.7711, 0.1619, 0.2809])
+    true_theta = reset_theta(arg.gains_range, arg.std_range, arg.goal_radius_range)
 
     true_theta_log.append(true_theta.data.clone())
     x_traj, obs_traj, a_traj, _ = trajectory(agent, true_theta, env, arg, arg.gains_range, arg.std_range,
@@ -83,7 +82,7 @@ for num_thetas in range(1):
     print("true loss:{}".format(true_loss_log))
     print("true_theta:{}".format(true_theta_log))
 
-    result = single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, num_thetas)
+    result = single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, num_thetas, Pro_Noise = True, Obs_Noise = True)
     result_log.append(result)
     torch.save(result_log, '../firefly-inverse-data/data/' + filename + "EP" + str(arg.NUM_EP) + str(
         np.around(arg.PI_STD, decimals=2)) + '_multiple_result.pkl')

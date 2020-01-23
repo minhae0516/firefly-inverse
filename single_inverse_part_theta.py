@@ -13,11 +13,16 @@ import time
 
 
 
-def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n):
+def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n, Pro_Noise = None, Obs_Noise = None):
     tic = time.time()
 
+    if Pro_Noise is not None:
+        Pro_Noise = true_theta[2:4]
+    if Obs_Noise is not None:
+        Obs_Noise = true_theta[6:8]
+
     #theta = nn.Parameter(true_theta.data.clone()+0.5*true_theta.data.clone())
-    theta = nn.Parameter(reset_theta(arg.gains_range, arg.std_range, arg.goal_radius_range))
+    theta = nn.Parameter(reset_theta(arg.gains_range, arg.std_range, arg.goal_radius_range, Pro_Noise, Obs_Noise))
     ini_theta = theta.data.clone()
 
 
@@ -31,10 +36,10 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n):
     for it in tqdm(range(1500)):
         loss = getLoss(agent, x_traj, a_traj, theta, env, arg.gains_range, arg.std_range, arg.PI_STD, arg.NUM_SAMPLES)
         loss_log.append(loss.data)
-        optT.zero_grad() #clears old gradients from the last step
-        loss.backward(retain_graph=True) #computes the derivative of the loss w.r.t. the parameters using backpropagation
+        optT.zero_grad()
+        loss.backward(retain_graph=True)
         optT.step() # performing single optimize step: this changes theta
-        theta = theta_range(theta, arg.gains_range, arg.std_range, arg.goal_radius_range) # keep inside of trained range
+        theta = theta_range(theta, arg.gains_range, arg.std_range, arg.goal_radius_range, Pro_Noise, Obs_Noise) # keep inside of trained range
         theta_log.append(theta.data.clone())
 
 
@@ -53,7 +58,7 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n):
 
 
 
-    #
+
     loss = getLoss(agent, x_traj, a_traj, theta, env, arg.gains_range, arg.std_range, arg.PI_STD, arg.NUM_SAMPLES)
     #print("loss:{}".format(loss))
 

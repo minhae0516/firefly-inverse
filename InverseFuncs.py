@@ -244,43 +244,54 @@ def getLoss(agent, x_traj, obs_traj, a_traj, theta, env, gains_range, std_range)
 
 
 
-def reset_theta(gains_range, std_range, goal_radius_range):
+def reset_theta(gains_range, std_range, goal_radius_range, Pro_Noise = None, Obs_Noise = None):
     pro_gains = torch.zeros(2)
-    pro_noise_stds = torch.zeros(2)
     obs_gains = torch.zeros(2)
-    obs_noise_stds = torch.zeros(2)
 
     pro_gains[0] = torch.zeros(1).uniform_(gains_range[0], gains_range[1])  # [proc_gain_vel]
     pro_gains[1] = torch.zeros(1).uniform_(gains_range[2], gains_range[3])  # [proc_gain_ang]
-
-    pro_noise_stds[0] = torch.zeros(1).uniform_(std_range[0], std_range[1])  # [proc_vel_noise]
-    pro_noise_stds[1] = torch.zeros(1).uniform_(std_range[2], std_range[3])  # [proc_ang_noise]
-
     obs_gains[0] = torch.zeros(1).uniform_(gains_range[0], gains_range[1])  # [obs_gain_vel]
     obs_gains[1] = torch.zeros(1).uniform_(gains_range[2], gains_range[3])  # [obs_gain_ang]
-
-    obs_noise_stds[0] = torch.zeros(1).uniform_(std_range[0], std_range[1])  # [obs_vel_noise]
-    obs_noise_stds[1] = torch.zeros(1).uniform_(std_range[2], std_range[3])  # [obs_ang_noise]
-
     goal_radius = torch.zeros(1).uniform_(goal_radius_range[0], goal_radius_range[1])
 
+    if Pro_Noise is None:
+       pro_noise_stds = torch.zeros(2)
+       pro_noise_stds[0] = torch.zeros(1).uniform_(std_range[0], std_range[1])  # [proc_vel_noise]
+       pro_noise_stds[1] = torch.zeros(1).uniform_(std_range[2], std_range[3])  # [proc_ang_noise]
+    else:
+        pro_noise_stds = Pro_Noise
+
+
+    if Obs_Noise is None:
+        obs_noise_stds = torch.zeros(2)
+        obs_noise_stds[0] = torch.zeros(1).uniform_(std_range[0], std_range[1])  # [obs_vel_noise]
+        obs_noise_stds[1] = torch.zeros(1).uniform_(std_range[2], std_range[3])  # [obs_ang_noise]
+    else:
+        obs_noise_stds = Obs_Noise
 
     theta = torch.cat([pro_gains, pro_noise_stds, obs_gains, obs_noise_stds, goal_radius])
     return theta
 
-def theta_range(theta, gains_range, std_range, goal_radius_range):
+
+def theta_range(theta, gains_range, std_range, goal_radius_range, Pro_Noise = None, Obs_Noise = None):
 
     theta[0].data.clamp_(gains_range[0], gains_range[1])
     theta[1].data.clamp_(gains_range[2], gains_range[3])  # [proc_gain_ang]
 
-    theta[2].data.clamp_(std_range[0], std_range[1])  # [proc_vel_noise]
-    theta[3].data.clamp_(std_range[2], std_range[3])  # [proc_ang_noise]
+    if Pro_Noise is None:
+        theta[2].data.clamp_(std_range[0], std_range[1])  # [proc_vel_noise]
+        theta[3].data.clamp_(std_range[2], std_range[3])  # [proc_ang_noise]
+    else:
+        theta[2:4].data.copy_(Pro_Noise.data)
 
     theta[4].data.clamp_(gains_range[0], gains_range[1])  # [obs_gain_vel]
     theta[5].data.clamp_(gains_range[2], gains_range[3])  # [obs_gain_ang]
 
-    theta[6].data.clamp_(std_range[0], std_range[1])  # [obs_vel_noise]
-    theta[7].data.clamp_(std_range[2], std_range[3])  # [obs_ang_noise]
+    if Obs_Noise is None:
+        theta[6].data.clamp_(std_range[0], std_range[1])  # [obs_vel_noise]
+        theta[7].data.clamp_(std_range[2], std_range[3])  # [obs_ang_noise]
+    else:
+        theta[6:8].data.copy_(Obs_Noise.data)
 
     theta[8].data.clamp_(goal_radius_range[0], goal_radius_range[1])
 
