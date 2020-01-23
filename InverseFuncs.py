@@ -97,19 +97,18 @@ def getLoss(agent, x_traj, a_traj, theta, env, gains_range, std_range, PI_STD, N
                 next_ox = agent.Bstep.observations_mean(next_x) # multiplied by observation gain, no noise
                 next_ox_ = agent.Bstep.observations(next_x)  # simulated observation (with noise)
 
+                """
                 action_loss = np.log(np.sqrt(2* pi)*PI_STD)*torch.ones(2)+(action -a_traj_ep[it])**2 /2/ (PI_STD**2)
-
-
                 obs_loss = torch.log(np.sqrt(2* pi)*obs_noise_stds) +(next_ox_ - next_ox).view(-1) ** 2/2/(obs_noise_stds**2)
                 logPr_ep = logPr_ep + (action_loss  + obs_loss ).sum()
-                #logPr_ep = logPr_ep + (action_loss ).sum()
-
-
                 """
+
+
+
                 action_loss =5*torch.ones(2)+np.log(np.sqrt(2* pi)*PI_STD) + (action - a_traj_ep[it] ) ** 2 / 2 /(PI_STD**2)
                 obs_loss = torch.log(np.sqrt(2* pi)*obs_noise_stds) +(next_ox_ - next_ox).view(-1) ** 2/2/(obs_noise_stds**2)
                 logPr_ep = logPr_ep + (action_loss + obs_loss).sum()
-                """
+
                 #logPr_ep = logPr_ep + ((action - a_traj_ep[it] ) ** 2 / 2 /(PI_STD**2)).sum()+ ((next_ox_ - next_ox).view(-1) ** 2/2/(obs_noise_stds**2) ).sum() # + sign is because negative lor Pr
                 next_b, info = agent.Bstep(b, next_ox_, a_traj_ep[it], env.box)  # action: use real data
                 next_state = agent.Bstep.Breshape(next_b, t, (pro_gains, pro_noise_stds, obs_gains, obs_noise_stds,

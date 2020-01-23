@@ -66,15 +66,17 @@ final_theta_log = []
 stderr_log = []
 result_log = []
 
-for num_thetas in range(10):
+for num_thetas in range(1):
 
     # true theta
-    true_theta = reset_theta(arg.gains_range, arg.std_range, arg.goal_radius_range)
+    #true_theta = reset_theta(arg.gains_range, arg.std_range, arg.goal_radius_range)
+    true_theta = torch.tensor([11.4042, 8.6168, 0.2885, 0.9043, 11.1173, 8.1504, 1.7711, 0.1619, 0.2809])
+
     true_theta_log.append(true_theta.data.clone())
     x_traj, obs_traj, a_traj, _ = trajectory(agent, true_theta, env, arg, arg.gains_range, arg.std_range,
                                              arg.goal_radius_range, arg.NUM_EP)  # generate true trajectory
     true_loss = getLoss(agent, x_traj, a_traj, true_theta, env, arg.gains_range, arg.std_range, arg.PI_STD,
-                        arg.NUM_SAMPLES, num_cores)  # this is the lower bound of loss?
+                        arg.NUM_SAMPLES)  # this is the lower bound of loss?
 
     true_loss_log.append(true_loss)
 

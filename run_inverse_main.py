@@ -68,7 +68,7 @@ final_theta_log = []
 stderr_log = []
 result_log = []
 
-for num_thetas in range(10):
+for num_thetas in range(12):
 
     # true theta
     true_theta = reset_theta(arg.gains_range, arg.std_range, arg.goal_radius_range)

@@ -28,7 +28,7 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n):
     loss_diff = deque(maxlen=5)
 
 
-    for it in tqdm(range(1000)):
+    for it in tqdm(range(1500)):
         loss = getLoss(agent, x_traj, a_traj, theta, env, arg.gains_range, arg.std_range, arg.PI_STD, arg.NUM_SAMPLES)
         loss_log.append(loss.data)
         optT.zero_grad()
@@ -40,8 +40,8 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n):
 
         loss_diff.append(torch.abs(prev_loss - loss))
 
-        if it > 5 and np.sum(loss_diff) < 100:
-            break
+        #if it > 5 and np.sum(loss_diff) < 100:
+            #break
         prev_loss = loss.data
 
 
