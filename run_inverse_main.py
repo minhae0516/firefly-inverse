@@ -6,7 +6,8 @@ from joblib import Parallel, delayed
 from tqdm import tqdm
 
 from InverseFuncs import trajectory, getLoss, reset_theta, theta_range
-from single_inverse import single_inverse
+#from single_inverse import single_inverse
+from single_inverse_part_theta import single_inverse
 
 from DDPGv2Agent import Agent
 from FireflyEnv import Model # firefly_task.py
@@ -70,7 +71,7 @@ result_log = []
 x_traj_log=[]
 a_traj_log=[]
 
-for num_thetas in range(3):
+for num_thetas in range(12):
 
     # true theta
     true_theta = reset_theta(arg.gains_range, arg.std_range, arg.goal_radius_range)
@@ -84,8 +85,8 @@ for num_thetas in range(3):
     a_traj_log.append(a_traj)
     true_loss_log.append(true_loss)
 
-    print("true_theta:{}".format(true_theta_log))
-    print("true loss:{}".format(true_loss_log))
+print("true_theta:{}".format(true_theta_log))
+print("true loss:{}".format(true_loss_log))
 
 
 
