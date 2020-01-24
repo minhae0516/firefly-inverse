@@ -67,8 +67,10 @@ true_loss_log = []
 final_theta_log = []
 stderr_log = []
 result_log = []
+x_traj_log=[]
+a_traj_log=[]
 
-for num_thetas in range(12):
+for num_thetas in range(3):
 
     # true theta
     true_theta = reset_theta(arg.gains_range, arg.std_range, arg.goal_radius_range)
@@ -78,6 +80,8 @@ for num_thetas in range(12):
     true_loss = getLoss(agent, x_traj, a_traj, true_theta, env, arg.gains_range, arg.std_range, arg.PI_STD,
                         arg.NUM_SAMPLES)  # this is the lower bound of loss?
 
+    x_traj_log.append(x_traj)
+    a_traj_log.append(a_traj)
     true_loss_log.append(true_loss)
 
     print("true_theta:{}".format(true_theta_log))
@@ -89,7 +93,7 @@ num_cores = multiprocessing.cpu_count()
 print("{} cores are available".format(num_cores))
 inputs = tqdm(true_theta_log)
 
-result_log = Parallel(n_jobs=num_cores)(delayed(single_inverse)(true_theta, arg, env, agent, x_traj, a_traj, filename, n) for n, true_theta in enumerate(inputs))
+result_log = Parallel(n_jobs=num_cores)(delayed(single_inverse)(true_theta, arg, env, agent, x_traj_log[n], a_traj_log[n], filename, n) for n, true_theta in enumerate(inputs))
 torch.save(result_log, '../firefly-inverse-data/data/'+filename +"EP"+str(arg.NUM_EP)+ str(np.around(arg.PI_STD, decimals = 2))+'_multiple_result.pkl')
 
 print('done')

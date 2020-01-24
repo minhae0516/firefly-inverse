@@ -85,7 +85,7 @@ for num_thetas in range(1):
     result = single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, num_thetas, Pro_Noise = True, Obs_Noise = True)
     result_log.append(result)
     torch.save(result_log, '../firefly-inverse-data/data/' + filename + "EP" + str(arg.NUM_EP) + str(
-        np.around(arg.PI_STD, decimals=2)) + '_multiple_result.pkl')
+        np.around(arg.PI_STD, decimals=2)) + '_no_parl_result.pkl')
 
 
 
