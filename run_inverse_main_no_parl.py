@@ -4,7 +4,9 @@
 
 
 from InverseFuncs import trajectory, getLoss, reset_theta, theta_range
-from single_inverse_part_theta import single_inverse
+#from single_inverse_part_theta import single_inverse
+from single_inverse import single_inverse
+
 
 from DDPGv2Agent import Agent
 from FireflyEnv import Model # firefly_task.py
@@ -82,16 +84,12 @@ for num_thetas in range(1):
     print("true loss:{}".format(true_loss_log))
     print("true_theta:{}".format(true_theta_log))
 
-    result = single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, num_thetas, Pro_Noise = True, Obs_Noise = True)
+    #result = single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, num_thetas, Pro_Noise = True, Obs_Noise = True)
+    result = single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, num_thetas)
+
     result_log.append(result)
     torch.save(result_log, '../firefly-inverse-data/data/' + filename + "EP" + str(arg.NUM_EP) + str(
-        np.around(arg.PI_STD, decimals=2)) + '_no_parl_result.pkl')
+        np.around(arg.PI_STD, decimals=2)) +"IT"+ str(arg.NUM_IT) + '_no_parl_result.pkl')
 
-
-
-#for n, true_theta in enumerate(true_theta_log):
-
-
-#result_log = Parallel(n_jobs=num_cores)(delayed(single_inverse)(true_theta, arg, env, agent, x_traj, a_traj, filename, n) for n, true_theta in enumerate(inputs))
 
 print('done')

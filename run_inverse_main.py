@@ -38,10 +38,25 @@ device = "cpu"
 
 
 
-
+"""
 filename = '20191231-172726-01081157' # agent information
 
 learning_arg = torch.load('../firefly-inverse-data/data/20191231-172726_arg.pkl')
+
+#ewha windows trained monkey
+filename = '20191231-173348-01081806-good' # agent information
+
+learning_arg = torch.load('../firefly-inverse-data/data/20191231-173348_arg.pkl')
+
+"""
+
+
+#ewha mac trained monkey
+filename = '20191231-185016-01061745' # agent information
+
+learning_arg = torch.load('../firefly-inverse-data/data/20191231-185016_arg.pkl')
+
+
 
 DISCOUNT_FACTOR = learning_arg.DISCOUNT_FACTOR
 arg.gains_range = learning_arg.gains_range
@@ -94,7 +109,9 @@ num_cores = multiprocessing.cpu_count()
 print("{} cores are available".format(num_cores))
 inputs = tqdm(true_theta_log)
 
-result_log = Parallel(n_jobs=num_cores)(delayed(single_inverse)(true_theta, arg, env, agent, x_traj_log[n], a_traj_log[n], filename, n) for n, true_theta in enumerate(inputs))
+#result_log = Parallel(n_jobs=num_cores)(delayed(single_inverse)(true_theta, arg, env, agent, x_traj_log[n], a_traj_log[n], filename, n) for n, true_theta in enumerate(inputs))
+result_log = Parallel(n_jobs=num_cores)(delayed(single_inverse)(true_theta, arg, env, agent, x_traj_log[n], a_traj_log[n], filename, n, Pro_Noise = True, Obs_Noise = True) for n, true_theta in enumerate(inputs))
+
 torch.save(result_log, '../firefly-inverse-data/data/'+filename +"EP"+str(arg.NUM_EP)+ str(np.around(arg.PI_STD, decimals = 2))+'_multiple_result.pkl')
 
 print('done')

@@ -31,6 +31,7 @@ class Inverse_Config:
         self.PI_STD = 0.1 #1/5 # policy std --> just normalizer in this code
         self.NUM_SAMPLES = 5 # number of particles
         self.NUM_EP = 500
+        self.NUM_IT = 3000 # number of iteration for gradient descent
 
         self.ADAM_LR = 5e-3
 
