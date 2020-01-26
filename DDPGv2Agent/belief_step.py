@@ -12,7 +12,7 @@ from .terminal import *
 
 from FireflyEnv.env_utils import *
 from FireflyEnv.firefly_task import dynamics
-from FireflyEnv.plotter_gym import Render
+#from FireflyEnv.plotter_gym import Render
 
 
 class BeliefStep(nn.Module):
@@ -27,7 +27,7 @@ class BeliefStep(nn.Module):
         self.terminal_vel = arg.TERMINAL_VEL
         self.episode_len = arg.EPISODE_LEN
         self.episode_time = arg.EPISODE_LEN * self.dt
-        self.rendering = Render()
+        #self.rendering = Render()
         return
 
     def reset(self, x, time, pro_gains, pro_noise_stds, goal_radius, gains_range, std_range, obs_gains = None, obs_noise_stds = None):
@@ -240,9 +240,10 @@ class BeliefStep(nn.Module):
 
         pos = torch.cat([px, py])
         return pos, r
-
+    """
     def render(self, b):
         bx, P = b
         goal = torch.zeros(2)
         self.rendering.render(goal, bx.view(1,-1), P)
+        """
 

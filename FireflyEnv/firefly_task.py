@@ -114,10 +114,11 @@ class Model(nn.Module):
 
         return next_x, reached_target
 
-
+    """
     def render(self, x, P):
         goal = torch.zeros(2)
         self.rendering.render(goal, x, P)
+        """
 
     def get_position(self, x):
         pos = x.view(-1)[:2]

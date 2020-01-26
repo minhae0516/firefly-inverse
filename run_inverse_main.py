@@ -90,7 +90,7 @@ if __name__ == "__main__":
     x_traj_log=[]
     a_traj_log=[]
 
-    for num_thetas in range(12):
+    for num_thetas in range(25):
 
         # true theta
         true_theta = reset_theta(arg.gains_range, arg.std_range, arg.goal_radius_range)
