@@ -26,14 +26,14 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n, Pro
     ini_theta = theta.data.clone()
 
 
-    loss_log = deque(maxlen=2000)
-    theta_log = deque(maxlen=2000)
+    loss_log = deque(maxlen=arg.NUM_IT)
+    theta_log = deque(maxlen=arg.NUM_IT)
     optT = torch.optim.Adam([theta], lr=arg.ADAM_LR)
     prev_loss = 100000
     loss_diff = deque(maxlen=5)
 
 
-    for it in tqdm(range(1500)):
+    for it in tqdm(range(arg.NUM_IT)):
         loss = getLoss(agent, x_traj, a_traj, theta, env, arg.gains_range, arg.std_range, arg.PI_STD, arg.NUM_SAMPLES)
         loss_log.append(loss.data)
         optT.zero_grad()

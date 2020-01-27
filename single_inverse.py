@@ -25,7 +25,7 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n):
     theta_log = deque(maxlen=arg.NUM_IT)
     optT = torch.optim.Adam([theta], lr=arg.ADAM_LR)
     prev_loss = 100000
-    loss_diff = deque(maxlen=arg.NUM_IT)
+    loss_diff = deque(maxlen=5)
 
 
     for it in tqdm(range(arg.NUM_IT)):
