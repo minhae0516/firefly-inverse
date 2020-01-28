@@ -298,3 +298,20 @@ def theta_range(theta, gains_range, std_range, goal_radius_range, Pro_Noise = No
 
 
     return theta
+
+
+def theta_init(agent, env, arg):
+    # true theta
+    true_theta = reset_theta(arg.gains_range, arg.std_range, arg.goal_radius_range)
+    #true_theta_log.append(true_theta.data.clone())
+    x_traj, _, a_traj, _ = trajectory(agent, true_theta, env, arg, arg.gains_range, arg.std_range,
+                                      arg.goal_radius_range, arg.NUM_EP)  # generate true trajectory
+    true_loss = getLoss(agent, x_traj, a_traj, true_theta, env, arg.gains_range, arg.std_range, arg.PI_STD,
+                        arg.NUM_SAMPLES)  # this is the lower bound of loss?
+
+    init_result = {'true_theta_log': true_theta,
+                   'true_loss_log': true_loss,
+                   'x_traj_log': x_traj,
+                   'a_traj_log': a_traj
+                   }
+    return init_result

@@ -12,6 +12,7 @@ from single_inverse_part_theta import single_inverse
 from DDPGv2Agent import Agent
 from FireflyEnv import Model # firefly_task.py
 from Inverse_Config import Inverse_Config
+from InverseFuncs import theta_init
 
 import random
 import torch
@@ -42,17 +43,17 @@ if __name__ == "__main__":
     #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-    """
+
     filename = '20191231-172726-01081157' # agent information
-    
+
     learning_arg = torch.load('../firefly-inverse-data/data/20191231-172726_arg.pkl')
-    
+    """
     #ewha windows trained monkey
     filename = '20191231-173348-01081806-good' # agent information
     
     learning_arg = torch.load('../firefly-inverse-data/data/20191231-173348_arg.pkl')
     
-    """
+    
 
 
     #ewha mac trained monkey
@@ -60,7 +61,7 @@ if __name__ == "__main__":
 
     learning_arg = torch.load('../firefly-inverse-data/data/20191231-185016_arg.pkl')
 
-
+"""
 
     DISCOUNT_FACTOR = learning_arg.DISCOUNT_FACTOR
     arg.gains_range = learning_arg.gains_range
@@ -82,14 +83,35 @@ if __name__ == "__main__":
 
 
 
-    true_theta_log = []
-    true_loss_log = []
+    """
+    
     final_theta_log = []
     stderr_log = []
     result_log = []
-    x_traj_log=[]
-    a_traj_log=[]
+    
+    """
+    true_theta_log = []
+    true_loss_log = []
+    x_traj_log = []
+    a_traj_log = []
 
+    num_cores = multiprocessing.cpu_count()
+    print("{} cores are available".format(num_cores))
+
+
+    init_result = Parallel(n_jobs=num_cores)(delayed(theta_init)(agent, env, arg) for num_thetas in tqdm(range(arg.NUM_thetas)))
+
+    for i in range(arg.NUM_thetas):
+        true_theta_log.append(init_result[i]['true_theta_log'])
+        true_loss_log.append(init_result[i]['true_loss_log'])
+        x_traj_log.append(init_result[i]['x_traj_log'])
+        a_traj_log.append(init_result[i]['a_traj_log'])
+
+
+
+
+
+    """
     for num_thetas in range(25):
 
         # true theta
@@ -103,19 +125,21 @@ if __name__ == "__main__":
         x_traj_log.append(x_traj)
         a_traj_log.append(a_traj)
         true_loss_log.append(true_loss)
+    """
+
+
 
     print("true_theta:{}".format(true_theta_log))
     print("true loss:{}".format(true_loss_log))
 
 
 
-    num_cores = multiprocessing.cpu_count()
-    print("{} cores are available".format(num_cores))
+
     inputs = tqdm(true_theta_log)
 
     #result_log = Parallel(n_jobs=num_cores)(delayed(single_inverse)(true_theta, arg, env, agent, x_traj_log[n], a_traj_log[n], filename, n) for n, true_theta in enumerate(inputs))
     result_log = Parallel(n_jobs=num_cores)(delayed(single_inverse)(true_theta, arg, env, agent, x_traj_log[n], a_traj_log[n], filename, n, Pro_Noise = True, Obs_Noise = True) for n, true_theta in enumerate(inputs))
 
-    torch.save(result_log, '../firefly-inverse-data/data/'+filename +"EP"+str(arg.NUM_EP)+ str(np.around(arg.PI_STD, decimals = 2))+"sample"+str(arg.NUM_SAMPLES)+"IT"+ str(arg.NUM_IT) +'_multiple_result.pkl')
+    torch.save(result_log, '../firefly-inverse-data/data/'+filename +str(arg.NUM_thetas)+"EP"+str(arg.NUM_EP)+ str(np.around(arg.PI_STD, decimals = 2))+"sample"+str(arg.NUM_SAMPLES)+"IT"+ str(arg.NUM_IT) +'_multiple_result.pkl')
 
     print('done')
