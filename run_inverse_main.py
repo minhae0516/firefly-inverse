@@ -116,6 +116,6 @@ if __name__ == "__main__":
     #result_log = Parallel(n_jobs=num_cores)(delayed(single_inverse)(true_theta, arg, env, agent, x_traj_log[n], a_traj_log[n], filename, n) for n, true_theta in enumerate(inputs))
     result_log = Parallel(n_jobs=num_cores)(delayed(single_inverse)(true_theta, arg, env, agent, x_traj_log[n], a_traj_log[n], filename, n, Pro_Noise = True, Obs_Noise = True) for n, true_theta in enumerate(inputs))
 
-    torch.save(result_log, '../firefly-inverse-data/data/'+filename +"EP"+str(arg.NUM_EP)+ str(np.around(arg.PI_STD, decimals = 2))+'_multiple_result.pkl')
+    torch.save(result_log, '../firefly-inverse-data/data/'+filename +"EP"+str(arg.NUM_EP)+ str(np.around(arg.PI_STD, decimals = 2))+"sample"+str(arg.NUM_SAMPLES)+"IT"+ str(arg.NUM_IT) +'_multiple_result.pkl')
 
     print('done')

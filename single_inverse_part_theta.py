@@ -34,6 +34,10 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n, Pro
 
 
     for it in tqdm(range(arg.NUM_IT)):
+
+        if it % 100 == 0:
+            print("num:{}, it:{}/{}".format(n, it, arg.NUM_IT))
+
         loss = getLoss(agent, x_traj, a_traj, theta, env, arg.gains_range, arg.std_range, arg.PI_STD, arg.NUM_SAMPLES)
         loss_log.append(loss.data)
         optT.zero_grad()
@@ -68,10 +72,16 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n, Pro
 
     grads = grad(loss, theta, create_graph=True)[0]
     H = torch.zeros(9,9)
+
+
     for i in range(9):
         H[i] = grad(grads[i], theta, retain_graph=True)[0]
+    stderr = 1 / torch.sqrt(H.diag().abs())
+
+    """
     I = H.inverse()
-    stderr = torch.sqrt(I.diag())
+    stderr = torch.sqrt(I.diag().abs())
+    """
 
 
     result = {'true_theta': true_theta,

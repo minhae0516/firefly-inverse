@@ -29,7 +29,7 @@ class Inverse_Config:
         self.BOX_STEP_SIZE = 0
         self.GOAL_RADIUS_STEP_SIZE = 0
         self.PI_STD = 0.1 #1/5 # policy std --> just normalizer in this code
-        self.NUM_SAMPLES = 5 # number of particles
+        self.NUM_SAMPLES = 50 # number of particles
         self.NUM_EP = 500
         self.NUM_IT = 3000 # number of iteration for gradient descent
 
