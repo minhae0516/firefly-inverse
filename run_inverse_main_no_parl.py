@@ -4,8 +4,8 @@
 
 
 from InverseFuncs import trajectory, getLoss, reset_theta, theta_range
-from single_inverse_part_theta import single_inverse
-#from single_inverse import single_inverse
+#from single_inverse_part_theta import single_inverse
+from single_inverse import single_inverse
 
 
 from DDPGv2Agent import Agent
@@ -76,6 +76,7 @@ for num_thetas in range(1):
     true_theta_log.append(true_theta.data.clone())
     x_traj, obs_traj, a_traj, _ = trajectory(agent, true_theta, env, arg, arg.gains_range, arg.std_range,
                                              arg.goal_radius_range, arg.NUM_EP)  # generate true trajectory
+
     true_loss = getLoss(agent, x_traj, a_traj, true_theta, env, arg.gains_range, arg.std_range, arg.PI_STD,
                         arg.NUM_SAMPLES)  # this is the lower bound of loss?
 
@@ -84,12 +85,13 @@ for num_thetas in range(1):
     print("true loss:{}".format(true_loss_log))
     print("true_theta:{}".format(true_theta_log))
 
-    result = single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, num_thetas, Pro_Noise = True, Obs_Noise = True)
-    #result = single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, num_thetas)
+
+    #result = single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, num_thetas, Pro_Noise = True, Obs_Noise = True)
+    result = single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, num_thetas)
 
     result_log.append(result)
     torch.save(result_log, '../firefly-inverse-data/data/' + filename + "EP" + str(arg.NUM_EP) + str(
-        np.around(arg.PI_STD, decimals=2))+"sample"+str(arg.NUM_SAMPLES) +"IT"+ str(arg.NUM_IT) + '_no_parl_result.pkl')
+        np.around(arg.PI_STD, decimals=2))+"sample"+str(arg.NUM_SAMPLES) +"IT"+ str(arg.NUM_IT) + '_LR_no_parl_result.pkl')
 
 
 print('done')

@@ -15,15 +15,22 @@ import time
 
 def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n):
     tic = time.time()
+    rndsgn = torch.sign(torch.randn(1,len(true_theta))).view(-1)
+    purt= torch.Tensor([0.5,0.5,0.1,0.1,0.5,0.5,0.1,0.1,0.1])#fperturbation
 
-    #theta = nn.Parameter(true_theta.data.clone()+0.5*true_theta.data.clone())
-    theta = nn.Parameter(reset_theta(arg.gains_range, arg.std_range, arg.goal_radius_range))
+
+    theta = nn.Parameter(true_theta.data.clone()+rndsgn*purt)
+    theta = theta_range(theta, arg.gains_range, arg.std_range, arg.goal_radius_range)  # keep inside of trained range
+
+
+    #theta = nn.Parameter(reset_theta(arg.gains_range, arg.std_range, arg.goal_radius_range))
     ini_theta = theta.data.clone()
 
 
     loss_log = deque(maxlen=arg.NUM_IT)
     theta_log = deque(maxlen=arg.NUM_IT)
     optT = torch.optim.Adam([theta], lr=arg.ADAM_LR)
+    scheduler = torch.optim.lr_scheduler.StepLR(optT, step_size=arg.LR_STEP, gamma=0.95) # decreasing learning rate x0.5 every 100steps
     prev_loss = 100000
     loss_diff = deque(maxlen=5)
 
@@ -36,6 +43,8 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n):
         optT.step() # performing single optimize step: this changes theta
         theta = theta_range(theta, arg.gains_range, arg.std_range, arg.goal_radius_range) # keep inside of trained range
         theta_log.append(theta.data.clone())
+        if it < 100:
+            scheduler.step()
 
 
         loss_diff.append(torch.abs(prev_loss - loss))
@@ -45,10 +54,10 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n):
         prev_loss = loss.data
 
 
-        if it%50 == 0:
+        if it%5 == 0:
             #print("num_theta:{}, num:{}, loss:{}".format(n, it, np.round(loss.data.item(), 6)))
             #print("num:{},theta diff sum:{}".format(it, 1e6 * (true_theta - theta.data.clone()).sum().data))
-            print("num_theta:{}, num:{},  loss:{}\n converged_theta:{}".format(n, it, np.round(loss.data.item(), 6),theta.data.clone()))
+            print("num_theta:{}, num:{}, lr:{} loss:{}\n converged_theta:{}".format(n, it, scheduler.get_lr(),np.round(loss.data.item(), 6),theta.data.clone()))
 
 
 
