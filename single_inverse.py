@@ -57,7 +57,7 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n):
         if it%5 == 0:
             #print("num_theta:{}, num:{}, loss:{}".format(n, it, np.round(loss.data.item(), 6)))
             #print("num:{},theta diff sum:{}".format(it, 1e6 * (true_theta - theta.data.clone()).sum().data))
-            print("num_theta:{}, num:{}, lr:{} loss:{}\n converged_theta:{}".format(n, it, scheduler.get_lr(),np.round(loss.data.item(), 6),theta.data.clone()))
+            print("num_theta:{}, num:{}, lr:{} loss:{}\n converged_theta:{}\n".format(n, it, scheduler.get_lr(),np.round(loss.data.item(), 6),theta.data.clone()))
 
 
 

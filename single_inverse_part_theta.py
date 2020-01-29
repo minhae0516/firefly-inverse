@@ -21,23 +21,30 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n, Pro
     if Obs_Noise is not None:
         Obs_Noise = true_theta[6:8]
 
-    #theta = nn.Parameter(true_theta.data.clone()+0.5*true_theta.data.clone())
-    theta = nn.Parameter(reset_theta(arg.gains_range, arg.std_range, arg.goal_radius_range, Pro_Noise, Obs_Noise))
+    rndsgn = torch.sign(torch.randn(1, len(true_theta))).view(-1)
+    purt = torch.Tensor([0.5, 0.5, 0, 0, 0.5, 0.5, 0, 0, 0.1])  # fperturbation
+
+    theta = nn.Parameter(true_theta.data.clone() + rndsgn * purt)
+    theta = theta_range(theta, arg.gains_range, arg.std_range, arg.goal_radius_range)  # keep inside of trained range
+
+
+    #theta = nn.Parameter(reset_theta(arg.gains_range, arg.std_range, arg.goal_radius_range, Pro_Noise, Obs_Noise))
     ini_theta = theta.data.clone()
 
 
     loss_log = deque(maxlen=arg.NUM_IT)
     theta_log = deque(maxlen=arg.NUM_IT)
     optT = torch.optim.Adam([theta], lr=arg.ADAM_LR)
-    prev_loss = 100000
-    loss_diff = deque(maxlen=5)
+    scheduler = torch.optim.lr_scheduler.StepLR(optT, step_size=arg.LR_STEP,
+                                                gamma=0.95)  # decreasing learning rate x0.5 every 100steps
 
 
     for it in tqdm(range(arg.NUM_IT)):
 
+        """
         if it % 100 == 0:
-            print("num:{}, it:{}/{}".format(n, it, arg.NUM_IT))
-
+            print("num:{}, it:{}/{}\n".format(n, it, arg.NUM_IT))
+        """
         loss = getLoss(agent, x_traj, a_traj, theta, env, arg.gains_range, arg.std_range, arg.PI_STD, arg.NUM_SAMPLES)
         loss_log.append(loss.data)
         optT.zero_grad()
@@ -45,19 +52,14 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n, Pro
         optT.step() # performing single optimize step: this changes theta
         theta = theta_range(theta, arg.gains_range, arg.std_range, arg.goal_radius_range, Pro_Noise, Obs_Noise) # keep inside of trained range
         theta_log.append(theta.data.clone())
+        if it < 100:
+            scheduler.step()
 
 
-        loss_diff.append(torch.abs(prev_loss - loss))
 
-        #if it > 5 and np.sum(loss_diff) < 100:
-            #break
-        prev_loss = loss.data
+        if it%5 == 0:
+            print("num_theta:{}, num:{}, lr:{} loss:{}\n converged_theta:{}\n".format(n, it, scheduler.get_lr(),np.round(loss.data.item(), 6),theta.data.clone()))
 
-
-        if it%50 == 0:
-            #print("num_theta:{}, num:{}, loss:{}".format(n, it, np.round(loss.data.item(), 6)))
-            #print("num:{},theta diff sum:{}".format(it, 1e6 * (true_theta - theta.data.clone()).sum().data))
-            print("num_theta:{}, num:{},  loss:{}\n converged_theta:{}".format(n, it, np.round(loss.data.item(), 6),theta.data.clone()))
 
 
 
@@ -72,16 +74,15 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n, Pro
 
     grads = grad(loss, theta, create_graph=True)[0]
     H = torch.zeros(9,9)
-
-
     for i in range(9):
         H[i] = grad(grads[i], theta, retain_graph=True)[0]
-    stderr = 1 / torch.sqrt(H.diag().abs())
-
-    """
     I = H.inverse()
-    stderr = torch.sqrt(I.diag().abs())
-    """
+    stderr = torch.sqrt(I.diag())
+
+
+    stderr_ii = 1/torch.sqrt(torch.abs(H.diag()))
+
+
 
 
     result = {'true_theta': true_theta,
@@ -94,6 +95,9 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n, Pro
               'converging_it': it,
               'duration': toc-tic,
               'arguments': arg,
-              'stderr': stderr
+              'stderr': stderr,
+              'stderr_ii': stderr_ii
               }
+
+
     return result

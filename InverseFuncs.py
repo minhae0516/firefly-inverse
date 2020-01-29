@@ -119,9 +119,10 @@ def getLoss(agent, x_traj, a_traj, theta, env, gains_range, std_range, PI_STD, N
                 b = next_b
 
 
-            logPr = torch.cat([logPr, logPr_ep])
+            logPr += logPr_ep
+            #logPr = torch.cat([logPr, logPr_ep])
 
-    return logPr.sum()
+    return logPr #logPr.sum()
 
 """
 # action only loss function
