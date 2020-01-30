@@ -32,7 +32,7 @@ class Inverse_Config:
         self.NUM_SAMPLES = 50 # number of particles
         self.NUM_EP = 500
         self.NUM_IT = 60 # number of iteration for gradient descent
-        self.NUM_thetas = 2
+        self.NUM_thetas = 15
 
         self.ADAM_LR = 5e-1 #for learning rate annealing#5e-3
         self.LR_STEP = 1

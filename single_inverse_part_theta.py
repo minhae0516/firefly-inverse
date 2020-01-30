@@ -30,9 +30,6 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n, Pro
 
     #theta = nn.Parameter(reset_theta(arg.gains_range, arg.std_range, arg.goal_radius_range, Pro_Noise, Obs_Noise))
     ini_theta = theta.data.clone()
-    print("num_theta:{}, lr:{} loss:{}\n initial theta:{}\n".format(n, scheduler.get_lr(),
-                                                                              np.round(loss.data.item(), 6),
-                                                                              theta.data.clone()))
 
     loss_log = deque(maxlen=arg.NUM_IT)
     loss_act_log = deque(maxlen=arg.NUM_IT)
