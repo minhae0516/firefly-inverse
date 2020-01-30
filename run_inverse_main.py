@@ -6,8 +6,8 @@ from joblib import Parallel, delayed
 from tqdm import tqdm
 
 from InverseFuncs import trajectory, getLoss, reset_theta, theta_range
-#from single_inverse import single_inverse
-from single_inverse_part_theta import single_inverse
+from single_inverse import single_inverse
+#from single_inverse_part_theta import single_inverse
 
 from DDPGv2Agent import Agent
 from FireflyEnv import Model # firefly_task.py
@@ -137,8 +137,8 @@ if __name__ == "__main__":
 
     inputs = tqdm(true_theta_log)
 
-    #result_log = Parallel(n_jobs=num_cores)(delayed(single_inverse)(true_theta, arg, env, agent, x_traj_log[n], a_traj_log[n], filename, n) for n, true_theta in enumerate(inputs))
-    result_log = Parallel(n_jobs=num_cores)(delayed(single_inverse)(true_theta, arg, env, agent, x_traj_log[n], a_traj_log[n], filename, n, Pro_Noise = True, Obs_Noise = True) for n, true_theta in enumerate(inputs))
+    result_log = Parallel(n_jobs=num_cores)(delayed(single_inverse)(true_theta, arg, env, agent, x_traj_log[n], a_traj_log[n], filename, n) for n, true_theta in enumerate(inputs))
+    #result_log = Parallel(n_jobs=num_cores)(delayed(single_inverse)(true_theta, arg, env, agent, x_traj_log[n], a_traj_log[n], filename, n, Pro_Noise = True, Obs_Noise = True) for n, true_theta in enumerate(inputs))
 
     torch.save(result_log, '../firefly-inverse-data/data/'+filename +str(arg.NUM_thetas)+"EP"+str(arg.NUM_EP)+ str(np.around(arg.PI_STD, decimals = 2))+"sample"+str(arg.NUM_SAMPLES)+"IT"+ str(arg.NUM_IT) +'_multiple_result.pkl')
 

@@ -40,7 +40,7 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n, Pro
     theta_log = deque(maxlen=arg.NUM_IT)
     optT = torch.optim.Adam([theta], lr=arg.ADAM_LR)
     scheduler = torch.optim.lr_scheduler.StepLR(optT, step_size=arg.LR_STEP,
-                                                gamma=0.95)  # decreasing learning rate x0.5 every 100steps
+                                                gamma=arg.lr_gamma)  # decreasing learning rate x0.5 every 100steps
 
 
     for it in tqdm(range(arg.NUM_IT)):
@@ -59,7 +59,7 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n, Pro
         optT.step() # performing single optimize step: this changes theta
         theta = theta_range(theta, arg.gains_range, arg.std_range, arg.goal_radius_range, Pro_Noise, Obs_Noise) # keep inside of trained range
         theta_log.append(theta.data.clone())
-        if it < 50:
+        if it < arg.LR_STOP:
             scheduler.step()
 
 
