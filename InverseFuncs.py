@@ -70,7 +70,9 @@ def trajectory(agent, theta, env, arg, gains_range, std_range, goal_radius_range
 # MCEM based approach
 def getLoss(agent, x_traj, a_traj, theta, env, gains_range, std_range, PI_STD, NUM_SAMPLES):
 
-    logPr = torch.FloatTensor([])
+    logPr = torch.zeros(1) #torch.FloatTensor([])
+    logPr_act = torch.zeros(1)
+    logPr_obs = torch.zeros(1)
 
     pro_gains, pro_noise_stds, obs_gains, obs_noise_stds, goal_radius = torch.split(theta.view(-1), 2)
 
@@ -83,6 +85,9 @@ def getLoss(agent, x_traj, a_traj, theta, env, gains_range, std_range, PI_STD, N
         for ep, x_traj_ep in enumerate(x_traj):
             a_traj_ep = a_traj[ep]
             logPr_ep = torch.zeros(1)
+            logPr_act_ep = torch.zeros(1)
+            logPr_obs_ep = torch.zeros(1)
+
             t = torch.zeros(1)
             x = x_traj_ep[0].view(-1)
             b, state, _, _ = agent.Bstep.reset(x, t, pro_gains, pro_noise_stds, goal_radius, gains_range,
@@ -107,10 +112,15 @@ def getLoss(agent, x_traj, a_traj, theta, env, gains_range, std_range, PI_STD, N
 
                 action_loss =5*torch.ones(2)+np.log(np.sqrt(2* pi)*PI_STD) + (action - a_traj_ep[it] ) ** 2 / 2 /(PI_STD**2)
                 obs_loss = 5*torch.ones(2)+torch.log(np.sqrt(2* pi)*obs_noise_stds) +(next_ox_ - next_ox).view(-1) ** 2/2/(obs_noise_stds**2)
-                logPr_ep = logPr_ep + (action_loss + obs_loss).sum()
+
+                logPr_act_ep = logPr_act_ep + action_loss.sum()
+                logPr_obs_ep = logPr_obs_ep + obs_loss.sum()
+
+
+
+                logPr_ep = logPr_ep + logPr_act_ep + logPr_obs_ep
                 #logPr_ep = logPr_ep +   (obs_loss).sum()
 
-                #logPr_ep = logPr_ep + ((action - a_traj_ep[it] ) ** 2 / 2 /(PI_STD**2)).sum()+ ((next_ox_ - next_ox).view(-1) ** 2/2/(obs_noise_stds**2) ).sum() # + sign is because negative lor Pr
                 next_b, info = agent.Bstep(b, next_ox_, a_traj_ep[it], env.box)  # action: use real data
                 next_state = agent.Bstep.Breshape(next_b, t, (pro_gains, pro_noise_stds, obs_gains, obs_noise_stds,
                                                               goal_radius))  # state used in policy is different from belief
@@ -118,11 +128,13 @@ def getLoss(agent, x_traj, a_traj, theta, env, gains_range, std_range, PI_STD, N
                 state = next_state
                 b = next_b
 
+            logPr_act += logPr_act_ep
+            logPr_obs += logPr_obs_ep
 
             logPr += logPr_ep
             #logPr = torch.cat([logPr, logPr_ep])
 
-    return logPr #logPr.sum()
+    return logPr, logPr_act, logPr_obs #logPr.sum()
 
 """
 # action only loss function
@@ -307,7 +319,7 @@ def theta_init(agent, env, arg):
     #true_theta_log.append(true_theta.data.clone())
     x_traj, _, a_traj, _ = trajectory(agent, true_theta, env, arg, arg.gains_range, arg.std_range,
                                       arg.goal_radius_range, arg.NUM_EP)  # generate true trajectory
-    true_loss = getLoss(agent, x_traj, a_traj, true_theta, env, arg.gains_range, arg.std_range, arg.PI_STD,
+    true_loss, _, _ = getLoss(agent, x_traj, a_traj, true_theta, env, arg.gains_range, arg.std_range, arg.PI_STD,
                         arg.NUM_SAMPLES)  # this is the lower bound of loss?
 
     init_result = {'true_theta_log': true_theta,

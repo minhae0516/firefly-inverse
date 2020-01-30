@@ -64,6 +64,8 @@ agent.load(filename)
 
 true_theta_log = []
 true_loss_log = []
+true_loss_act_log = []
+true_loss_obs_log = []
 final_theta_log = []
 stderr_log = []
 result_log = []
@@ -77,19 +79,28 @@ for num_thetas in range(1):
     x_traj, obs_traj, a_traj, _ = trajectory(agent, true_theta, env, arg, arg.gains_range, arg.std_range,
                                              arg.goal_radius_range, arg.NUM_EP)  # generate true trajectory
 
-    true_loss = getLoss(agent, x_traj, a_traj, true_theta, env, arg.gains_range, arg.std_range, arg.PI_STD,
+    true_loss, true_loss_act, true_loss_obs = getLoss(agent, x_traj, a_traj, true_theta, env, arg.gains_range, arg.std_range, arg.PI_STD,
                         arg.NUM_SAMPLES)  # this is the lower bound of loss?
 
-    true_loss_log.append(true_loss)
 
-    print("true loss:{}".format(true_loss_log))
-    print("true_theta:{}".format(true_theta_log))
+
+    #true_loss_log.append(true_loss)
+    #true_loss_act_log.append(true_loss_act)
+    #true_loss_obs_log.append(true_loss_obs)
+
+    print("true loss:{}".format(true_loss))
+    print("true act loss:{}".format(true_loss_act))
+    print("true obs loss:{}".format(true_loss_obs))
+
+    print("true_theta:{}".format(true_theta))
 
 
     result = single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, num_thetas, Pro_Noise = True, Obs_Noise = True)
     #result = single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, num_thetas)
 
     result_log.append(result)
+
+
     torch.save(result_log, '../firefly-inverse-data/data/' + filename + "EP" + str(arg.NUM_EP) + str(
         np.around(arg.PI_STD, decimals=2))+"sample"+str(arg.NUM_SAMPLES) +"IT"+ str(arg.NUM_IT) + '_LR_parttheta_result.pkl')
 

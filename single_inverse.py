@@ -28,6 +28,8 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n):
 
 
     loss_log = deque(maxlen=arg.NUM_IT)
+    loss_act_log = deque(maxlen=arg.NUM_IT)
+    loss_obs_log = deque(maxlen=arg.NUM_IT)
     theta_log = deque(maxlen=arg.NUM_IT)
     optT = torch.optim.Adam([theta], lr=arg.ADAM_LR)
     scheduler = torch.optim.lr_scheduler.StepLR(optT, step_size=arg.LR_STEP, gamma=0.95) # decreasing learning rate x0.5 every 100steps
@@ -36,8 +38,10 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n):
 
 
     for it in tqdm(range(arg.NUM_IT)):
-        loss = getLoss(agent, x_traj, a_traj, theta, env, arg.gains_range, arg.std_range, arg.PI_STD, arg.NUM_SAMPLES)
+        loss, loss_act, loss_obs = getLoss(agent, x_traj, a_traj, theta, env, arg.gains_range, arg.std_range, arg.PI_STD, arg.NUM_SAMPLES)
         loss_log.append(loss.data)
+        loss_act_log.append(loss_act.data)
+        loss_obs_log.append(loss_obs.data)
         optT.zero_grad() #clears old gradients from the last step
         loss.backward(retain_graph=True) #computes the derivative of the loss w.r.t. the parameters using backpropagation
         optT.step() # performing single optimize step: this changes theta
@@ -63,7 +67,7 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n):
 
 
     #
-    loss = getLoss(agent, x_traj, a_traj, theta, env, arg.gains_range, arg.std_range, arg.PI_STD, arg.NUM_SAMPLES)
+    loss, _, _ = getLoss(agent, x_traj, a_traj, theta, env, arg.gains_range, arg.std_range, arg.PI_STD, arg.NUM_SAMPLES)
     #print("loss:{}".format(loss))
 
     toc = time.time()
@@ -88,6 +92,8 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n):
               'theta': theta,
               'theta_log': theta_log,
               'loss_log': loss_log,
+              'loss_act_log': loss_act_log,
+              'loss_obs_log': loss_obs_log,
               'filename': filename,
               'num_theta': n,
               'converging_it': it,
