@@ -89,6 +89,8 @@ def single_inverse(true_theta, arg, env, agent, x_traj, a_traj, filename, n):
 
     result = {'true_theta': true_theta,
               'initial_theta': ini_theta,
+              'x_traj': x_traj,
+              'a_traj': a_traj,
               'theta': theta,
               'theta_log': theta_log,
               'loss_log': loss_log,
